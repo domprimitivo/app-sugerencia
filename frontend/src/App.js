@@ -1,52 +1,63 @@
-import { useEffect } from "react";
+import { useState, useEffect } from 'react';
 import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
-
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
-};
+import { Navbar } from './components/Navbar';
+import { HeroSection } from './components/HeroSection';
+import { ProblemSection } from './components/ProblemSection';
+import { SolutionSection } from './components/SolutionSection';
+import { DomainsSection } from './components/DomainsSection';
+import { HowItWorksSection } from './components/HowItWorksSection';
+import { DifferentiatorsSection } from './components/DifferentiatorsSection';
+import { RoadmapSection } from './components/RoadmapSection';
+import { PricingSection } from './components/PricingSection';
+import { FAQSection } from './components/FAQSection';
+import { CTAFinalSection } from './components/CTAFinalSection';
+import { RegisterModal } from './components/RegisterModal';
+import { Footer } from './components/Footer';
+import { trackEvent, EVENTS } from './lib/analytics';
 
 function App() {
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [selectedDomain, setSelectedDomain] = useState(null);
+
+  const handleOpenRegister = (domain = null) => {
+    trackEvent(EVENTS.REGISTER_OPEN, { domain });
+    setSelectedDomain(domain);
+    setIsRegisterOpen(true);
+  };
+
+  const handleCloseRegister = () => {
+    setIsRegisterOpen(false);
+    setSelectedDomain(null);
+  };
+
+  const handleDomainSelect = (domainId) => {
+    handleOpenRegister(domainId);
+  };
+
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+    <div className="min-h-screen bg-[#09090B]" data-testid="app-container">
+      <Navbar onRegisterClick={() => handleOpenRegister()} />
+      
+      <main>
+        <HeroSection onRegisterClick={() => handleOpenRegister()} />
+        <ProblemSection />
+        <SolutionSection />
+        <DomainsSection onDomainSelect={handleDomainSelect} />
+        <HowItWorksSection />
+        <DifferentiatorsSection />
+        <RoadmapSection />
+        <PricingSection onRegisterClick={() => handleOpenRegister()} />
+        <FAQSection />
+        <CTAFinalSection onRegisterClick={() => handleOpenRegister()} />
+      </main>
+
+      <Footer />
+
+      <RegisterModal 
+        isOpen={isRegisterOpen}
+        onClose={handleCloseRegister}
+        preselectedDomain={selectedDomain}
+      />
     </div>
   );
 }
