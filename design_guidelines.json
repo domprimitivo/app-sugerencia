@@ -1,0 +1,171 @@
+{
+  "identity": {
+    "name": "Mileforum",
+    "tagline": "Tu Aprendiz IA Especializado",
+    "tone": "Professional, Intelligent, Cosmic, Grounded",
+    "description": "A SaaS platform offering a specialized AI apprentice that observes your work and adapts to your decision-making style."
+  },
+  "design_philosophy": {
+    "theme": "Dark Mode (Mandatory)",
+    "style": "Cosmic Geometric",
+    "core_principles": [
+      "Fusion over Imitation: Mix professional SaaS reliability with cosmic/geometric aesthetics.",
+      "Emotion First: Convey intelligence and focus.",
+      "Content is King: Every section must drive the narrative of 'The Apprentice that learns from you'.",
+      "Contrast: High contrast Yellow/Blue on Deep Black."
+    ]
+  },
+  "typography": {
+    "headings": {
+      "font_family": "JetBrains Mono, monospace",
+      "weight": "700",
+      "usage": "All section titles, hero headlines, and major callouts."
+    },
+    "body": {
+      "font_family": "IBM Plex Sans, sans-serif",
+      "weight": "400",
+      "usage": "Paragraphs, descriptions, and UI text."
+    }
+  },
+  "colors": {
+    "background": "#09090B",
+    "foreground": "#FAFAFA",
+    "primary": "#FACC15",
+    "accent": "#3B82F6",
+    "muted": "#27272A",
+    "border": "#27272A",
+    "palette_notes": "Use the primary Yellow (#FACC15) for main CTAs and key highlights. Use Accent Blue (#3B82F6) for secondary links, icons, and 'cosmic' glows. Background is strictly #09090B (Zinc 950)."
+  },
+  "layout": {
+    "spacing_system": "Generous spacing. Use p-8, p-12, p-24. Containers with borders must have internal padding (p-6 or p-8).",
+    "grid_system": "Bento Grid for Domains. Split layout for Hero. Zig-zag for 'How it Works'.",
+    "container_width": "max-w-7xl mx-auto px-4 sm:px-6 lg:px-8"
+  },
+  "components": {
+    "buttons": {
+      "style": "Sharp or slightly rounded (rounded-md). Primary buttons: Yellow bg, Black text. Secondary: Outline or Ghost with White text.",
+      "interaction": "Hover: Scale up slightly (scale-105), brightness boost."
+    },
+    "cards": {
+      "style": "Flat background (#09090B or #18181B), 1px border (#27272A). No heavy shadows. Use 'glow' effects on hover.",
+      "hover": "Border color changes to Primary or Accent. Subtle inner glow."
+    },
+    "inputs": {
+      "style": "Shadcn Input. Dark background, light border. Focus ring: Yellow or Blue."
+    }
+  },
+  "visual_enhancers": {
+    "background_texture": "Cosmic noise overlay. Use a subtle noise pattern or the provided cosmic image with low opacity/blending.",
+    "geometric_shapes": "Use abstract geometric shapes (triangles, hexagons, lines) as section dividers or background elements. CSS-based or SVG.",
+    "glow_effects": "Use box-shadow or drop-shadow to create 'neon' glows around key elements (CTAs, active cards)."
+  },
+  "assets": {
+    "images": {
+      "hero_background": {
+        "url": "https://images.unsplash.com/photo-1772048197706-8aceac401bf2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwyfHxhYnN0cmFjdCUyMGRhcmslMjBnZW9tZXRyaWMlMjBjb3NtaWMlMjB3YXZlc3xlbnwwfHx8fDE3NzM3NjU4MjB8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Abstract blue cosmic swirls. Use as a background overlay with low opacity or blend mode to add depth."
+      },
+      "hero_main": {
+        "url": "https://images.unsplash.com/photo-1602126282340-9f597c2f31ab?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMjV8MHwxfHNlYXJjaHwzfHxwcm9mZXNzaW9uYWwlMjB3b3JraW5nJTIwYXQlMjBkZXNrJTIwbW9kZXJuJTIwZGFyayUyMG9mZmljZSUyMGZvY3VzZWR8ZW58MHx8fHwxNzczNzY1ODI1fDA&ixlib=rb-4.1.0&q=85",
+        "description": "Professional woman working late, focused. Represents the user being observed by the AI apprentice."
+      }
+    },
+    "icons": {
+      "library": "lucide-react",
+      "mapping": {
+        "Abogado": "Scale",
+        "Arquitecto": "Ruler",
+        "Contador": "Calculator",
+        "Consultor PyME": "Briefcase",
+        "Diseño Producto": "PenTool",
+        "Operaciones": "Settings",
+        "Clínica": "Stethoscope",
+        "Hotel": "Bed",
+        "Restaurante": "Utensils",
+        "Retail": "ShoppingBag",
+        "Fábrica": "Factory",
+        "Logística": "Truck"
+      }
+    }
+  },
+  "sections": {
+    "hero": {
+      "elements": ["Headline: 'Tu Aprendiz IA que piensa como tú'", "Subheadline: 'Observa, aprende y ejecuta decisions en tu dominio profesional.'", "Primary CTA: 'Comenzar ahora'", "Secondary CTA: 'Ver Demo'", "Visual: Hero Image + Abstract Geometric Overlay"],
+      "layout": "Split: Text Left, Visual Right."
+    },
+    "problem": {
+      "elements": ["Headline: 'La IA genérica no entiende tu contexto'", "Content: Explain that generic AI fails at specific professional nuances."],
+      "style": "Minimalist, text-heavy with bold typography."
+    },
+    "solution": {
+      "elements": ["4 Steps: Observa, Aprende, Sugiere, Ejecuta.", "Visual: Timeline or Step-by-step cards."],
+      "style": "Cards with icons."
+    },
+    "domains": {
+      "elements": ["Grid of 12 Professional Domains"],
+      "layout": "Bento Grid (Grid-cols-2 md:grid-cols-3 lg:grid-cols-4). Each card has an icon and label."
+    },
+    "how_it_works": {
+      "elements": ["Diagrammatic explanation of the 'Shadow Learning' process."],
+      "style": "Geometric diagram using CSS/SVG lines connecting nodes."
+    },
+    "differentiators": {
+      "elements": ["List of unique features (Privacy, Domain Expertise, Adaptive Learning)."],
+      "style": "Checklist or Icon Grid."
+    },
+    "roadmap": {
+      "elements": ["Fase 2 Features"],
+      "style": "Timeline or Roadmap visual."
+    },
+    "pricing": {
+      "elements": ["Single Tier: $200 MXN/mes", "Features list", "CTA"],
+      "style": "Highlighted Card (Yellow border/glow)."
+    },
+    "faq": {
+      "elements": ["Accordion list of common questions."],
+      "component": "Shadcn Accordion"
+    },
+    "cta_final": {
+      "elements": ["Final push to sign up.", "Button"],
+      "style": "Centered, high impact background."
+    }
+  },
+  "motion": {
+    "library": "framer-motion",
+    "guidelines": "Use 'AnimatePresence' for modals. Use 'whileHover' for cards and buttons. Page sections should 'fade in up' (opacity: 0 -> 1, y: 20 -> 0) as they scroll into view."
+  },
+  "accessibility": {
+    "contrast": "Ensure text on Yellow background is Black. Text on Blue background is White. Text on Black background is White/Gray.",
+    "focus_states": "Visible focus rings (Yellow or Blue) for keyboard navigation."
+  },
+  "instructions_to_main_agent": [
+    "Use 'lucide-react' for all icons.",
+    "Implement the 'Cosmic Noise' by using a fixed background image with low opacity or a CSS radial gradient pattern.",
+    "Use Shadcn components for: Button, Card, Input, Label, Select, Accordion, Dialog, Sheet, Separator, Badge.",
+    "Customize Shadcn components to match the Dark/Yellow/Blue theme (override default radius and colors in tailwind.config.js or via utility classes).",
+    "Ensure the 'Register' form is functional (mocked submission) and captures the 'Domain' selection.",
+    "Use 'JetBrains Mono' for all headings to give a technical/developer vibe.",
+    "Do not use generic 'Inter' font.",
+    "Create a 'sticky' navigation bar with a glassmorphism effect (backdrop-blur)."
+  ],
+  "universal_guidelines": [
+    "Dark colors look good when used independently without gradients. DO NOT use dark colors as gradients.",
+    "Don't make generic centered layouts, simplistic gradients, and uniform styling.",
+    "Create depth through layered design elements with z-index hierarchy.",
+    "Use glass-morphism effects with backdrop filters (12-24px blur).",
+    "You MUST NOT apply universal transition. Eg: 'transition: all'. This results in breaking transforms. Always add transitions for specific interactive elements like button, input excluding transforms.",
+    "You MUST NOT center align the app container, ie do not add '.App { text-align: center; }' in the css file. This disrupts the human natural reading flow of text.",
+    "Always use modern button styles like pill-shaped, or sharp button with interaction animations & color relevant to the app style.",
+    "NEVER: use AI assistant Emoji characters like 🤖🧠 etc for icons.",
+    "Every interaction needs micro-animations - hover states, transitions, parallax effects, and entrance animations. Static = dead.",
+    "Use 2-3x more spacing than feels comfortable. Cramped designs look cheap.",
+    "Subtle grain textures, noise overlays, custom cursors, selection states, and loading animations: separates good from extraordinary.",
+    "Main agent relies on these image URLs. Missing categories (especially sponsor logos) = main agent will use placeholder text which is FORBIDDEN.",
+    "Prioritize using pre-existing components from src/components/ui when applicable.",
+    "Create new components that match the style and conventions of existing components when needed.",
+    "Examine existing components to understand the project's component patterns before creating new ones.",
+    "Components MUST use named exports (export const ComponentName = ...).",
+    "Pages MUST use default exports (export default function PageName() {...}).",
+    "Use 'sonner' for toasts. Sonner component are located in '/app/src/components/ui/sonner.tsx'."
+  ]
+}
