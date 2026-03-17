@@ -1,34 +1,129 @@
-.App-logo {
-    height: 40vmin;
-    pointer-events: none;
+/* Custom styles for Mileforum */
+
+/* Hero section styles */
+.hero-gradient {
+  background: linear-gradient(135deg, #09090B 0%, #18181B 50%, #09090B 100%);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-    .App-logo {
-        animation: App-logo-spin infinite 20s linear;
-    }
+/* Card hover effects */
+.domain-card {
+  background: #18181B;
+  border: 1px solid #27272A;
+  transition: border-color 0.3s ease, transform 0.3s ease;
 }
 
-.App-header {
-    background-color: #0f0f10;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    font-size: calc(10px + 2vmin);
-    color: white;
+.domain-card:hover {
+  border-color: #FACC15;
+  transform: translateY(-4px);
 }
 
-.App-link {
-    color: #61dafb;
+/* Pricing card glow */
+.pricing-card {
+  background: #18181B;
+  border: 2px solid #FACC15;
+  box-shadow: 0 0 40px rgba(250, 204, 21, 0.15);
 }
 
-@keyframes App-logo-spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+/* Step connector lines */
+.step-connector {
+  position: relative;
+}
+
+.step-connector::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: -50%;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, #3B82F6, transparent);
+}
+
+/* FAQ accordion styles */
+.faq-item {
+  border-bottom: 1px solid #27272A;
+}
+
+/* Navbar sticky styles */
+.navbar-sticky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  transition: background-color 0.3s ease;
+}
+
+.navbar-scrolled {
+  background: rgba(9, 9, 11, 0.95);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid #27272A;
+}
+
+/* Button styles */
+.btn-primary {
+  background: #FACC15;
+  color: #09090B;
+  font-weight: 600;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 25px rgba(250, 204, 21, 0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: #FAFAFA;
+  border: 1px solid #27272A;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  border-color: #3B82F6;
+  color: #3B82F6;
+}
+
+/* Section divider */
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #27272A, transparent);
+}
+
+/* Mockup frame */
+.mockup-frame {
+  background: #18181B;
+  border: 1px solid #27272A;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+/* Floating badge */
+.floating-badge {
+  animation: float 4s ease-in-out infinite;
+}
+
+/* Text gradient */
+.text-gradient-yellow {
+  background: linear-gradient(135deg, #FACC15, #FDE047);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #3B82F6, #60A5FA);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .hero-text h1 {
+    font-size: 2rem;
+    line-height: 1.2;
+  }
 }
