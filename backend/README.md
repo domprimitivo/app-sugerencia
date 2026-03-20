@@ -28,7 +28,7 @@
 ├── uploads/               # Documentos subidos temporalmente
 ├── README.md              # Este archivo
 │
-└── motor/                 # [MÓDULO DE IA]
+└── aprendiz_motor/        # [MÓDULO DE IA]
     ├── __init__.py
     ├── notebook_engine.py # Interfaz del modelo Aprendiz
     ├── modelos/           # Modelos .pth (6 unipersonales)
@@ -200,7 +200,7 @@ La clase `AprendizMileforum` debe:
 3. Retornar: `heads`, `estados`, `sugerencia_tcl`
 
 ```python
-from motor import inicializar_motor, ejecutar_episodio
+from aprendiz_motor import inicializar_motor, ejecutar_episodio
 
 # Inicializar
 inicializar_motor({"dominio_id": "abogado"})
