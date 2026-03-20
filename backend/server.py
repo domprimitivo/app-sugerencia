@@ -312,10 +312,10 @@ async def inicializar_configuracion(input: ConfiguracionInicial):
     # Inicializar motor según modo y tipo
     if input.modo == "local":
         if tipo_dominio == "unipersonal":
-            from motor import inicializar_motor
+            from aprendiz_motor import inicializar_motor
             inicializar_motor(config)
         else:
-            from motor.rag_agents import inicializar_rag
+            from aprendiz_motor.rag_agents import inicializar_rag
             inicializar_rag(input.dominio_id)
     
     return ConfiguracionResponse(**config)
@@ -483,7 +483,7 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
     if tipo_dominio == "unipersonal":
         # Motor Aprendiz
         if modo == "local":
-            from motor import ejecutar_episodio
+            from aprendiz_motor import ejecutar_episodio
             resultado = ejecutar_episodio(texto_concatenado, input.tipo_consulta)
             procesado_en = "local"
         else:
@@ -518,7 +518,7 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
     else:
         # Motor RAG (empresas)
         if modo == "local":
-            from motor.rag_agents import procesar_expediente as rag_procesar
+            from aprendiz_motor.rag_agents import procesar_expediente as rag_procesar
             docs_para_rag = [{"nombre": d["nombre"], "contenido": t, "tipo": d["tipo"]} 
                            for d, t in zip(documentos, textos)]
             resultado = rag_procesar(expediente_id, docs_para_rag)
@@ -671,7 +671,7 @@ async def estado_motor():
     if config.get("modo") == "local" and config.get("configurado"):
         try:
             if config.get("tipo_dominio") == "unipersonal":
-                from motor import obtener_estado_motor
+                from aprendiz_motor import obtener_estado_motor
                 estado["motor_local_disponible"] = True
                 estado["motor_estado"] = obtener_estado_motor()
             else:
