@@ -1,0 +1,199 @@
+{
+  "id_config": "cucurucho_restaurante_v1",
+  "version": "1.0.0",
+  "descripcion": "Perfil Cucurucho para restaurante pequeño/mediano: alta fricción operativa y dependencia de tiempos/turnos.",
+  "sector": "restaurante",
+  "dimensiones_operativas": [
+    "operacion",
+    "finanzas",
+    "personas",
+    "canales",
+    "infraestructura"
+  ],
+  "campos_prudenciales": {
+    "T": {
+      "nombre": "Tension",
+      "peso_global": 0.4,
+      "descripcion": "Nivel de presión operativo-comercial percibido en el sistema."
+    },
+    "K": {
+      "nombre": "Coherencia",
+      "peso_global": 0.22,
+      "descripcion": "Grado de alineación entre procesos, roles, canales y decisiones."
+    },
+    "R": {
+      "nombre": "Resiliencia",
+      "peso_global": 0.23,
+      "descripcion": "Capacidad del sistema para absorber shocks sin colapsar."
+    },
+    "IT": {
+      "nombre": "Indice_Telos",
+      "peso_global": 0.15,
+      "descripcion": "Alineación de la operación con el propósito declarado del sistema."
+    }
+  },
+  "umbrales_campos": {
+    "T": {
+      "alerta_suave": 0.6,
+      "alerta_dura": 0.75
+    },
+    "K": {
+      "alerta_suave": 0.42,
+      "alerta_dura": 0.28
+    },
+    "R": {
+      "alerta_suave": 0.45,
+      "alerta_dura": 0.3
+    },
+    "IT": {
+      "alerta_suave": 0.5,
+      "alerta_dura": 0.3
+    }
+  },
+  "geodesicas": {
+    "catalogo": [
+      {
+        "id": "GM1_estabilizacion_basica",
+        "descripcion": "Ruta prudencial para bajar T sin degradar R y manteniendo K en rango aceptable.",
+        "aplicable_a": [
+          "operacion",
+          "canales",
+          "finanzas"
+        ],
+        "prioridad": "media"
+      },
+      {
+        "id": "GM2_refuerzo_resiliencia",
+        "descripcion": "Ruta para subir R antes de tomar decisiones agresivas en T.",
+        "aplicable_a": [
+          "operacion",
+          "infraestructura",
+          "personas"
+        ],
+        "prioridad": "alta"
+      },
+      {
+        "id": "GM3_reduccion_incoherencias",
+        "descripcion": "Ruta para aumentar K eliminando fricciones entre áreas.",
+        "aplicable_a": [
+          "operacion",
+          "personas",
+          "canales"
+        ],
+        "prioridad": "media"
+      },
+      {
+        "id": "GM4_reenfoque_telos",
+        "descripcion": "Ruta para realinear IT cuando las decisiones comienzan a contradecir el propósito.",
+        "aplicable_a": [
+          "finanzas",
+          "personas",
+          "canales"
+        ],
+        "prioridad": "alta"
+      }
+    ],
+    "habilitadas_por_defecto": [
+      "GM1_estabilizacion_basica",
+      "GM2_refuerzo_resiliencia",
+      "GM3_reduccion_incoherencias",
+      "GM4_reenfoque_telos"
+    ]
+  },
+  "rnn_estado": {
+    "ventana_temporal_ticks": 48,
+    "frecuencia_actualizacion_minutos": 30,
+    "salidas": [
+      "proyeccion_T",
+      "proyeccion_K",
+      "proyeccion_R",
+      "proyeccion_IT",
+      "riesgo_liquidez",
+      "riesgo_operativo",
+      "riesgo_reputacional"
+    ]
+  },
+  "modos_alerta": {
+    "texto": {
+      "activo": true,
+      "intensidad_minima": "alerta_suave"
+    },
+    "sonido": {
+      "activo": false,
+      "patrones": {
+        "T_alta": "patron_tension_1",
+        "R_baja": "patron_resiliencia_1",
+        "K_baja": "patron_coherencia_1",
+        "IT_bajo": "patron_telos_1"
+      }
+    },
+    "panel": {
+      "activo": true,
+      "mostrar_heatmap_campos": true,
+      "mostrar_historial_geodesicas": true
+    }
+  },
+  "agentes_core": {
+    "AG0_orquestador": {
+      "activo": true
+    },
+    "AG1_cartografo": {
+      "activo": true,
+      "intensidad_descubrimiento": "alta"
+    },
+    "AG2_ontologo": {
+      "activo": true,
+      "modo": "estandar"
+    },
+    "AG3_limpiador": {
+      "activo": true,
+      "nivel_estrictez": "media"
+    },
+    "AG4_reconciliador": {
+      "activo": true,
+      "modo": "medio"
+    },
+    "AG5_ingeniero_features": {
+      "activo": true,
+      "perfil_features": "restaurante"
+    },
+    "AG6_observador_tensiones": {
+      "activo": true,
+      "sensibilidad": "alta"
+    },
+    "AG7_narrador_telos": {
+      "activo": true,
+      "plantilla_narrativa_base": "restaurante"
+    },
+    "AG8_guardian_etico": {
+      "activo": false,
+      "modo": "basico"
+    }
+  },
+  "plantillas_narrativas": {
+    "ruta_base": "narrativas/restaurante/",
+    "archivos": {
+      "explicacion_alerta_T": "alerta_tension_generica.md",
+      "explicacion_alerta_R": "alerta_resiliencia_generica.md",
+      "explicacion_alerta_K": "alerta_coherencia_generica.md",
+      "explicacion_alerta_IT": "alerta_telos_generica.md"
+    }
+  },
+  "paneles_visualizacion": {
+    "principal": {
+      "widgets": [
+        "resumen_campos_prudenciales",
+        "timeline_geodesicas",
+        "mapa_dimensiones_operativas",
+        "alertas_operativas_rapidas"
+      ]
+    },
+    "detallado": {
+      "widgets": [
+        "tabla_eventos_tensionales",
+        "panel_rnn_proyecciones",
+        "panel_turnos_y_picos"
+      ]
+    }
+  }
+}
