@@ -1,1 +1,42 @@
+{
+  "_comentario": "MILEFORUM · Configuración de modo de arranque",
+  "_instrucciones": "Cambia 'modo' para elegir cómo corre el sistema",
 
+  "modo": "local",
+
+  "_modos_disponibles": {
+    "api":   "Usa api.mileforum.ia externa · sin Python local · descarga ligera",
+    "local": "Corre Python en tu máquina · sin internet · privacidad total"
+  },
+
+  "api_externa": {
+    "url":    "https://api.mileforum.ia",
+    "timeout": 30
+  },
+
+  "dominio_activo": "hotel",
+  "tipo":           "empresarial",
+
+  "motor_por_dominio": {
+    "abogado":            "aprendiz",
+    "medico":             "aprendiz",
+    "arquitecto":         "aprendiz",
+    "contador_finanzas":  "aprendiz",
+    "consultor_pyme":     "aprendiz",
+    "operaciones_logistica": "aprendiz",
+    "hotel":              "rag",
+    "restaurante":        "rag",
+    "clinica":            "rag",
+    "retail":             "rag",
+    "fabrica":            "rag",
+    "logistica":          "rag"
+  },
+
+  "umbral_tension":    0.65,
+  "umbral_coherencia": 0.55,
+
+  "modulos_activos": ["ingesta", "cartografia", "limpieza",
+                      "features", "tensiones", "narrativa", "aprendiz"],
+
+  "capacitaciones": []
+}
