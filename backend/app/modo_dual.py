@@ -1,5 +1,5 @@
 """
-MILEFORUM · Gestor de Modo Dual
+MILEFORUM · Gestor de Modo Dual 
 Lee config_arranque.json y decide si usar la API externa
 o el motor Python local.
 
