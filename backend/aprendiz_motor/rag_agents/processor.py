@@ -1,5 +1,10 @@
 """
-aprendiz_motor/rag_agents/processor.py
+Recordar: Esos comentarios son solo documentación interna del archivo
+explican qué hace el archivo pero no afectan el funcionamiento del código.
+se estan docuentando 
+
+Ruta (Tambien aparece en la documentación "Mileforum_Entregable_Cliente_v1"+ capturas de pantalla.) 
+Ruta: aprendiz_motor/rag_agents/processor.py
 Motor RAG para dominios empresariales.
 Compatible con las llamadas de server.py:
   - inicializar_rag(dominio_id)
