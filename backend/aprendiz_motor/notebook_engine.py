@@ -2,7 +2,7 @@
 23/Marzo/2026 inicio
 Aprendiz Mileforum - Motor de IA Local
 =====================================
-Reemplaza el stub original con el conector real al bundle multiceph.
+Nota de lo que se esta realizando: Se reemplaza el stub original con el conector real al bundle multiceph.
 
 Nota:
 Prioridad de ejecución:
