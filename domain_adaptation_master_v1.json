@@ -1,0 +1,173 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "schema": "domain_adaptation_master_v1.0",
+  "title": "JSON Maestro de Adaptacion por Dominio",
+  "description": "Este archivo define la adaptación de los reportes de claridad para diferentes dominios de negocio.",
+  "generated_at_utc": "2026-04-22T10:43:45+00:00Z",
+  "purpose": "Centralizar las configuraciones de los Clarity Reports por dominio para permitir una generación dinámica.",
+  "scope": {
+    "execution_instructions_included": false,
+    "domain_adaptation_only": true,
+    "intended_for": [
+      "mileforum_core_universal_ingesta"
+    ]
+  },
+  "global_invariants": {
+    "phase_1_principles": [
+      "simplicidad",
+      "neutralidad",
+      "auditabilidad"
+    ],
+    "shared_output_schemas": [
+      "SourceCatalog",
+      "RawBundle",
+      "NormalizedBundle",
+      "SchemaDraft",
+      "QualityReport",
+      "ReconciliationReport",
+      "ExportPackage"
+    ]
+  },
+  "profiles": {
+    "restaurante": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_restaurante_v1.json",
+        "schema_version": "clarity_report_v1.0_restaurante",
+        "entity_mapping": [
+          {
+            "prefix": "MESA_",
+            "replacement": "Restaurante_Mesa_"
+          },
+          {
+            "prefix": "COCINA_",
+            "replacement": "Restaurante_Cocina_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de restaurantes."
+      }
+    },
+    "retail": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_retail_v1.json",
+        "schema_version": "clarity_report_v1.0_retail",
+        "entity_mapping": [
+          {
+            "prefix": "TIENDA_",
+            "replacement": "Retail_Tienda_"
+          },
+          {
+            "prefix": "CAJA_",
+            "replacement": "Retail_Caja_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de retail."
+      }
+    },
+    "hotel": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_hotel_v1.json",
+        "schema_version": "clarity_report_v1.1_hotel",
+        "entity_mapping": [
+          {
+            "prefix": "NORTE",
+            "replacement": "Hotel_Ala_Norte"
+          },
+          {
+            "prefix": "SUR",
+            "replacement": "Hotel_Ala_Sur"
+          },
+          {
+            "prefix": "CENTRO",
+            "replacement": "Hotel_Ala_Central"
+          }
+        ],
+        "domain_notes": "Este reporte ha sido adaptado al dominio hotelero. 'Entidades' representan alas o secciones específicas del hotel, por ejemplo, 'Hotel_Ala_Norte'. Los eventos y métricas se interpretan en el contexto de operaciones y calidad de servicio hotelero."
+      }
+    },
+    "fabrica": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_fabrica_v1.json",
+        "schema_version": "clarity_report_v1.0_fabrica",
+        "entity_mapping": [
+          {
+            "prefix": "LINEA_",
+            "replacement": "Fabrica_Linea_"
+          },
+          {
+            "prefix": "MAQUINA_",
+            "replacement": "Fabrica_Maquina_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de fábricas/manufactura."
+      }
+    },
+    "logistica": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_logistica_v1.json",
+        "schema_version": "clarity_report_v1.0_logistica",
+        "entity_mapping": [
+          {
+            "prefix": "RUTA_",
+            "replacement": "Logistica_Ruta_"
+          },
+          {
+            "prefix": "VEHICULO_",
+            "replacement": "Logistica_Vehiculo_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de logística y distribución."
+      }
+    },
+    "agricultura_bodega": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_agricultura_bodega_v1.json",
+        "schema_version": "clarity_report_v1.0_agricultura_bodega",
+        "entity_mapping": [
+          {
+            "prefix": "PARCELA_",
+            "replacement": "Agricultura_Parcela_"
+          },
+          {
+            "prefix": "SENSOR_",
+            "replacement": "Agricultura_Sensor_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de agricultura de precisión/bodega."
+      }
+    },
+    "clinica": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_clinica_v1.json",
+        "schema_version": "clarity_report_v1.0_clinica",
+        "entity_mapping": [
+          {
+            "prefix": "CONSULTORIO_",
+            "replacement": "Clinica_Consultorio_"
+          },
+          {
+            "prefix": "PACIENTE_",
+            "replacement": "Clinica_Paciente_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de clínicas/centros médicos."
+      }
+    },
+    "servicios_profesionales": {
+      "clarity_report_settings": {
+        "source_file": "cucurucho_servicios_profesionales_v1.json",
+        "schema_version": "clarity_report_v1.0_servicios_profesionales",
+        "entity_mapping": [
+          {
+            "prefix": "PROYECTO_",
+            "replacement": "Servicios_Profesionales_Proyecto_"
+          },
+          {
+            "prefix": "CLIENTE_",
+            "replacement": "Servicios_Profesionales_Cliente_"
+          }
+        ],
+        "domain_notes": "Reporte adaptado para el dominio de servicios profesionales."
+      }
+    }
+  }
+}
