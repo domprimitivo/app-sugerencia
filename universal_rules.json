@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.1",
+  "name": "mileforum_universal_rules",
+  "timestamp": "2026-02-05T11:59:52+00:00",
+  "core": {
+    "phase_system": {
+      "canonical_phases": [
+        "stable",
+        "tension",
+        "drift",
+        "rupture"
+      ],
+      "phase_indices": {
+        "stable": 0,
+        "tension": 1,
+        "drift": 2,
+        "rupture": 3
+      },
+      "invariant": true,
+      "notes": "Todo dominio debe mapearse a estas 4 fases. Los nombres narrativos por dominio viven en domain_config.json."
+    },
+    "backbone_contract": {
+      "required_outputs": [
+        "phase_probs",
+        "phase_idx",
+        "phase_name",
+        "clarity"
+      ],
+      "clarity_fields": [
+        "pmax",
+        "top2_gap",
+        "entropy"
+      ],
+      "invariant": true,
+      "notes": "El backbone puede cambiar internamente, pero debe respetar esta interfaz."
+    },
+    "abstention_policy": {
+      "mode": "universal",
+      "conditions": {
+        "min_probability_threshold": 0.65,
+        "min_top2_gap": 0.1,
+        "max_entropy": 1.35
+      },
+      "decision": {
+        "abstain_label": "no_estoy_seguro_de_la_fase",
+        "abstain_code": "ABSTAIN_PHASE_UNCERTAIN"
+      },
+      "invariant": true,
+      "notes": "Si no cumple claridad, la Policy abstiene y solicita acción humana + observaciones."
+    },
+    "R_field": {
+      "name": "R_resiliencia",
+      "range": [
+        0.0,
+        1.0
+      ],
+      "semantics": "Capacidad de operar sin colapso local; 1=alta resiliencia, 0=colapso.",
+      "invariant": true,
+      "notes": "El cálculo de R puede usar heads específicas por dominio, pero siempre debe existir y registrarse."
+    },
+    "episode_contract": {
+      "event_schema": "DecisionEvent",
+      "required_top_level_fields": [
+        "event_id",
+        "timestamp",
+        "domain",
+        "node_id",
+        "backbone_inference",
+        "heads_artifacts",
+        "tcl",
+        "action_execution",
+        "soft_context",
+        "taximeter_snapshot",
+        "receipt_destruction"
+      ],
+      "required_backbone_inference_fields": [
+        "phase",
+        "phase_probs",
+        "clarity",
+        "R_score"
+      ],
+      "required_action_execution_fields": [
+        "action_known",
+        "action_id",
+        "action_label",
+        "user_accepted_suggestion",
+        "completion_state"
+      ],
+      "invariant": true,
+      "notes": "Este contrato permite que el ajuste bimestral sea agnóstico al dominio."
+    },
+    "learning_contract": {
+      "daily_online": {
+        "expand_action_dictionary_on_correction_or_abstention": true,
+        "bind_new_actions_to_current_phase_even_if_uncertain": true,
+        "learn_soft_tags_from_observations": true
+      },
+      "bimonthly_offline": {
+        "freeze_backbone": true,
+        "train_policy_head": true,
+        "calibrate_R_brake_threshold": true,
+        "validate_with_kappa": true
+      },
+      "invariant": true
+    },
+    "privacy_contract": {
+      "ephemeral_buffers": true,
+      "keep_only_geometric_essence": true,
+      "require_destruction_receipt_if_sensitive_input": true,
+      "invariant": true,
+      "notes": "El sistema destruye insumos sensibles y conserva solo logs mínimos para aprendizaje."
+    }
+  },
+  "runtime": {
+    "phase_gating_defaults": {
+      "mode": "hard",
+      "threshold": 0.7
+    },
+    "R_brake_policy": {
+      "thresholds": {
+        "warn_if_R_below": 0.45
+      },
+      "behavior": {
+        "warn_only": true,
+        "require_human_confirmation_on_warn": true
+      },
+      "notes": "Este umbral puede ser ajustado bimestralmente y guardado como override."
+    },
+    "taximeter_contract": {
+      "required_fields": [
+        "taximeter_id",
+        "cost_space",
+        "now",
+        "forecast",
+        "drivers_topk"
+      ],
+      "notes": "El taxímetro varía por dominio, pero respeta esta interfaz."
+    },
+    "limits": {
+      "max_soft_tags_vocab": 128,
+      "max_action_vocab": 512,
+      "max_events_per_tuning_window": 20000
+    }
+  },
+  "overrides": {
+    "allowed_override_files": [
+      "R_brake_override.json",
+      "abstention_override.json",
+      "phase_gating_override.json"
+    ],
+    "allowlist_overridable_fields": [
+      "runtime.R_brake_policy.thresholds.warn_if_R_below",
+      "core.abstention_policy.conditions.min_probability_threshold",
+      "core.abstention_policy.conditions.min_top2_gap",
+      "core.abstention_policy.conditions.max_entropy",
+      "runtime.phase_gating_defaults.threshold"
+    ],
+    "notes": "Los dominios no modifican el core. Solo se permiten overrides en esta lista blanca, típicamente derivados del ajuste bimestral."
+  }
+}
