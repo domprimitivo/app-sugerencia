@@ -127,3 +127,31 @@
     line-height: 1.2;
   }
 }
+
+/* Slider de la Pantalla de Claridad (paleta ladrillo) */
+.claridad-range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  background: #D8C8A6;
+  outline: none;
+}
+.claridad-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #A94E34;
+  cursor: pointer;
+  border: 2px solid #F4EEDF;
+}
+.claridad-range::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  background: #A94E34;
+  cursor: pointer;
+  border: 2px solid #F4EEDF;
+}

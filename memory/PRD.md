@@ -11,6 +11,11 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
 - `backend/lazo_generico.py`: puerto fiel del notebook (evaluar_kpis, detectar_autoengano,
   sugerir_geodesica, lazo_asesoria, lazo_agencia). Endpoints `GET /api/lazo/dominio`,
   `POST /api/lazo/evaluar`. Frontend `/claridad`. Testeado 100%.
+- REDISEÑO (2026-09-02): paleta arquitectónica (ladrillo/cielo/césped/arena). KPIs 100%
+  gráficos = SEMÁFORO (verde/amarillo/rojo), sin nombres ni números. "Geodésicas" →
+  "Trayectorias": único texto; oculto hasta que el usuario lo CONVOCA (indicador que
+  pulsa), o automático cuando el backend marca CÉNIT (requiere_cenit) con estilo de alta
+  atención (ladrillo). Distinción gráfica/baja-atención vs texto/alta-atención. Testeado 100%.
 
 ### 2) Activador / Validador (verificado, sin cambios de código)
 - La verificación en `server.py` (`verificar_activador`, `_generar_firma`) coincide
