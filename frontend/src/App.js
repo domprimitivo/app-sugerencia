@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import "@/App.css";
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
@@ -13,9 +14,10 @@ import { FAQSection } from './components/FAQSection';
 import { CTAFinalSection } from './components/CTAFinalSection';
 import { RegisterModal } from './components/RegisterModal';
 import { Footer } from './components/Footer';
+import { PantallaClaridad } from './components/PantallaClaridad';
 import { trackEvent, EVENTS } from './lib/analytics';
 
-function App() {
+function Landing() {
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [selectedDomain, setSelectedDomain] = useState(null);
 
@@ -59,6 +61,17 @@ function App() {
         preselectedDomain={selectedDomain}
       />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Landing />} />
+        <Route path="/claridad" element={<PantallaClaridad />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

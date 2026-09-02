@@ -1629,6 +1629,41 @@ async def estado_ingesta(dominio: str):
     }
 
 
+# ─── Lazo Generico: Pantalla de Claridad (Asesoria / Agencia) ────────────────
+
+from lazo_generico import (
+    DOMINIO_CVD,
+    lazo_asesoria,
+    lazo_agencia,
+    dominio_serializable,
+)
+
+
+class LazoInput(BaseModel):
+    modo: Literal["ASESORIA", "AGENCIA"]
+    kpis: Dict[str, float]
+
+
+@api_router.get("/lazo/dominio")
+async def get_lazo_dominio():
+    """
+    Config del dominio activo (KPIs, umbrales y geodesicas) para que la
+    Pantalla de Claridad renderice las entradas del lazo.
+    """
+    return dominio_serializable(DOMINIO_CVD)
+
+
+@api_router.post("/lazo/evaluar")
+async def evaluar_lazo(input: LazoInput):
+    """
+    Ejecuta el lazo generico y devuelve exactamente lo que la Pantalla de
+    Claridad debe mostrar. Reemplaza el antiguo reporte de claridad.
+    """
+    if input.modo == "ASESORIA":
+        return lazo_asesoria(input.kpis, DOMINIO_CVD)
+    return lazo_agencia(input.kpis, DOMINIO_CVD)
+
+
 # ─── Registro del router y arranque ─────────────────────────────────────────
 
 app.include_router(api_router)
