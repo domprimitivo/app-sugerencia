@@ -2,44 +2,54 @@
 
 ## Regla soberana (invariante)
 App 100% local: FastAPI + SQLite, sin MongoDB, sin dependencias/referencias a terceros,
-sin preparación para build/deploy en ninguna plataforma. Cambios puntuales; no agregar
-nada que no esté explícitamente solicitado.
+sin build/deploy en ninguna plataforma. Cambios puntuales; no reconstruir; mantener
+intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca nube).
 
-## Problema / Cambio (2026-09-02)
-Unificar el "reporte de claridad" en el **lazo genérico**. El reporte deja de ser un
-paso separado: su información es ahora el resultado natural del lazo, mostrado en la
-**Pantalla de Claridad** (interfaz nativa del lazo), con dos modos:
-- **ASESORÍA** (sin hermanos): 7 KPIs → Cénit humano. El humano autoriza.
-- **AGENCIA** (con hermanos): lazo completo (Corto, Mediano, Largo). El sistema ejecuta;
-  solo llama al Cénit en casos críticos.
+## Implementado
 
-## Implementado (2026-09-02)
-- Backend `/app/backend/lazo_generico.py`: port fiel del notebook (DominioConfig,
-  DOMINIO_CVD, evaluar_kpis, detectar_autoengano, sugerir_geodesica, lazo_asesoria,
-  lazo_agencia, dominio_serializable). Python puro, sin numpy/pandas (varianza manual).
-- Backend endpoints en `server.py`:
-  - `GET /api/lazo/dominio` → config del dominio (KPIs, umbrales, geodésicas).
-  - `POST /api/lazo/evaluar` {modo, kpis} → resultado del lazo (lo que muestra la pantalla).
-- Frontend `/app/frontend/src/components/PantallaClaridad.jsx` (ruta `/claridad`):
-  sliders de 7 KPIs, presets Nominal/Autoengaño, toggle ASESORÍA/AGENCIA, panel de
-  resultado (estado general, KPIs con color, Barra de Tres Hermanos en AGENCIA,
-  diagnóstico autoengaño/fallo de pegado, geodésica sugerida, acciones).
-- Routing en `App.js` (BrowserRouter): `/` landing intacta, `/claridad` nueva pantalla.
-- `frontend/.env` creado con REACT_APP_BACKEND_URL (gitignored; para preview/local).
+### 1) Pantalla de Claridad — Lazo genérico (2026-09-02)
+- `backend/lazo_generico.py`: puerto fiel del notebook (evaluar_kpis, detectar_autoengano,
+  sugerir_geodesica, lazo_asesoria, lazo_agencia). Endpoints `GET /api/lazo/dominio`,
+  `POST /api/lazo/evaluar`. Frontend `/claridad`. Testeado 100%.
 
-## Estado de pruebas
-- Testing agent: backend 100%, frontend 100%. POSTs reales desde navegador y render OK
-  en ambos modos. Tests en `/app/backend/tests/test_lazo.py`.
+### 2) Activador / Validador (verificado, sin cambios de código)
+- La verificación en `server.py` (`verificar_activador`, `_generar_firma`) coincide
+  EXACTAMENTE con `generar_activador.py` (referencia externa del operador):
+  clave `mileforum-prudential-2026-clave-privada-antonio`, HMAC-SHA256 sobre
+  `json.dumps(campos, sort_keys=True, ensure_ascii=False)` sin el campo `firma`.
+- Probado: válido→activo; firma alterada / cliente_id ajeno / vencido→rechazado.
+- La generación NO está en la app (solo verificación). `mileforum_activador.json` de
+  prueba está ligado al cliente_id de esta máquina de preview.
 
-## Notas
-- El preset "Autoengaño" (valores del notebook) produce estado `TENSION` (fallo_pegado,
-  requiere_cenit=True) — fiel a la lógica del notebook; el panel Cénit se muestra correcto.
-  El estado `AUTOENGAÑO` requiere los 6 KPIs estructurales en ROJO.
-- Warnings de `ephemeral-upload-storage` en server.py son pre-existentes e intencionales
-  (soberanía local; no usar object storage).
+### 3) Compresión Geométrica — Códec MOCG (2026-09-02)
+- `backend/compresion_geometrica.py` (Python puro + numpy; sin gradio/plotly/scipy):
+  clasifica por contenido, normaliza a eventos, manifold incremental 8D, comprime en
+  3 capas (íntegra lossless / inferible PCA2 / geométrica) + reporte de forma con
+  anomalías. `comprimir`, `descomprimir` (exacto, sha256), `es_paquete_comprimido`.
+- Endpoints: `POST /api/compresion/toggle` (alterna: comprime, o descomprime si se
+  sube un paquete MOCG_CODEC_V1) y `POST /api/compresion/sistema/{dominio}` (comprime
+  carpetas del sistema: aprendiz_data, bundles, session_files, bimestral_package).
+- Frontend `/archivos` (`ArchivosEmbudo.jsx`): subida de archivos, botón
+  "Procesar con el embudo" (RAG: expedientes/documentos/procesar) y botón único
+  "Comprimir / Descomprimir". Testeado 100% (round-trip lossless).
+
+### Modo del lazo (hardcodeado)
+- Constante `MODO_LAZO = 'ASESORIA'` en `frontend/src/components/ArchivosEmbudo.jsx`.
+  Para otro repo/build cambiar a `'AGENCIA'` en esa línea (comentada). El activador no
+  lleva campo "modo", por eso se hardcodea en esta versión.
+
+## Cambios de infraestructura (sin alterar comportamiento)
+- `backend/local_storage.py`: helper de persistencia local (disco), usado por las
+  subidas para centralizar la escritura. Comportamiento idéntico (archivos locales).
+- `backend/app/db/sqlite_db.py`: reparado docstring corrupto (comilla triple sin cerrar).
+  Archivo huérfano (no importado por nadie).
+
+## Pruebas
+- iteration_2.json (lazo) OK; iteration_3.json (compresión) OK. Backend/Frontend 100%.
+- Tests: `backend/tests/test_lazo.py`, `backend/tests/test_compresion.py`.
 
 ## Backlog / Next
-- P2: Cargar la config de dominio desde el cuestionario/archivos cucurucho en lugar de
-  DOMINIO_CVD fijo (multi-dominio en la Pantalla de Claridad).
-- P2: Persistir/registrar cada ejecución del lazo (histórico) en SQLite.
-- P2: Enlazar las acciones (Autorizar / Validar) a un flujo real de registro de decisión.
+- P2: Multi-dominio para el lazo (config desde cuestionario/cucurucho).
+- P2: Pantalla de configuración inicial en React (hoy el sistema no está "configurado",
+  por eso el embudo RAG pide configuración). El flujo real vive en el exe Flutter.
+- P2: Descarga directa del paquete/archivos del sistema comprimido desde /archivos.

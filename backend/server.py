@@ -13,6 +13,7 @@ import logging
 import sqlite3
 import zipfile
 import io
+import base64
 import threading
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
@@ -20,6 +21,7 @@ from typing import List, Optional, Dict, Any, Literal
 import uuid
 from datetime import datetime, timezone
 import shutil
+from local_storage import guardar_stream
 
 def _resolver_root_dir() -> Path:
     """
@@ -677,8 +679,7 @@ async def subir_documento(expediente_id: str, file: UploadFile = File(...)):
     exp_dir = UPLOADS_DIR / expediente_id
     exp_dir.mkdir(exist_ok=True)
     file_path = exp_dir / file.filename
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(file.file, buffer)
+    guardar_stream(file_path, file.file)
     doc_meta = DocumentoMetadata(expediente_id=expediente_id, nombre=file.filename, tipo=file.content_type or "application/octet-stream", size=file_path.stat().st_size)
     db_execute(
         "INSERT INTO documentos (id, expediente_id, nombre, tipo, size, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
@@ -992,8 +993,8 @@ async def recibir_learning_log(dominio: str, file: UploadFile = File(...)):
                 continue
 
     ruta = APRENDIZ_DIR / f"{dominio}_learning_log.jsonl"
-    with open(ruta, 'wb') as f:
-        f.write(contenido)
+    await file.seek(0)
+    guardar_stream(ruta, file.file)
 
     received_at = datetime.now(timezone.utc).isoformat()
     for evento in eventos:
@@ -1039,8 +1040,8 @@ async def recibir_soft_dictionary(dominio: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="JSON invalido")
 
     ruta = APRENDIZ_DIR / f"{dominio}_soft_dictionary_state.json"
-    with open(ruta, 'wb') as f:
-        f.write(contenido)
+    await file.seek(0)
+    guardar_stream(ruta, file.file)
 
     db_execute("""
         INSERT INTO aprendiz_dictionaries (dominio, tipo, data_json, updated_at)
@@ -1085,8 +1086,8 @@ async def recibir_action_dictionary(dominio: str, file: UploadFile = File(...)):
         raise HTTPException(status_code=400, detail="JSON invalido")
 
     ruta = APRENDIZ_DIR / f"{dominio}_action_dictionary_state.json"
-    with open(ruta, 'wb') as f:
-        f.write(contenido)
+    await file.seek(0)
+    guardar_stream(ruta, file.file)
 
     db_execute("""
         INSERT INTO aprendiz_dictionaries (dominio, tipo, data_json, updated_at)
@@ -1214,8 +1215,8 @@ async def guardar_bundle(dominio: str, tipo: str, file: UploadFile = File(...)):
     contenido = await file.read()
     nombre = f"{dominio}_{tipo}_bundle_{datetime.now(timezone.utc).strftime('%Y%m%d_%H%M%S')}{Path(file.filename).suffix}"
     ruta = BUNDLES_DIR / nombre
-    with open(ruta, 'wb') as f:
-        f.write(contenido)
+    await file.seek(0)
+    guardar_stream(ruta, file.file)
 
     return {
         "dominio": dominio,
@@ -1662,6 +1663,79 @@ async def evaluar_lazo(input: LazoInput):
     if input.modo == "ASESORIA":
         return lazo_asesoria(input.kpis, DOMINIO_CVD)
     return lazo_agencia(input.kpis, DOMINIO_CVD)
+
+
+# ─── Compresión Geométrica (Códec MOCG, 100% local) ──────────────────────────
+
+from compresion_geometrica import (
+    comprimir as _comprimir,
+    descomprimir as _descomprimir,
+    es_paquete_comprimido as _es_paquete,
+)
+
+COMPRESION_DIR = ROOT_DIR / 'compresion'
+COMPRESION_DIR.mkdir(exist_ok=True)
+
+
+@api_router.post("/compresion/toggle")
+async def compresion_toggle(files: List[UploadFile] = File(...)):
+    """
+    Botón único: si se sube UN paquete ya comprimido → descomprime
+    (reconstrucción exacta). En cualquier otro caso → comprime lo
+    seleccionado (3 capas + reporte de forma). Todo local.
+    """
+    leidos = []
+    for f in files:
+        leidos.append({"nombre": f.filename, "datos": await f.read()})
+
+    # ¿Alternar a descompresión? (un solo archivo y es paquete del códec)
+    if len(leidos) == 1 and _es_paquete(leidos[0]["datos"]):
+        paquete = json.loads(leidos[0]["datos"].decode("utf-8"))
+        reconstruidos = _descomprimir(paquete)
+        return {
+            "accion": "descomprimido",
+            "n_archivos": len(reconstruidos),
+            "integridad_ok": all(r["sha256_ok"] for r in reconstruidos),
+            "archivos": [
+                {"nombre": r["nombre"],
+                 "datos_b64": base64.b64encode(r["datos"]).decode("ascii"),
+                 "sha256_ok": r["sha256_ok"]}
+                for r in reconstruidos
+            ],
+        }
+
+    # Comprimir
+    config = load_config()
+    org_id = config.get("dominio_id") or "ORG-001"
+    paquete = _comprimir(leidos, org_id=org_id)
+    return {
+        "accion": "comprimido",
+        "marker": paquete["marker"],
+        "shape_report": paquete["shape_report"],
+        "paquete": paquete,
+    }
+
+
+@api_router.post("/compresion/sistema/{dominio}")
+async def comprimir_sistema(dominio: str):
+    """
+    Comprime las carpetas que el sistema genera para un dominio
+    (aprendiz_data, bundles, session_files, bimestral_package).
+    """
+    leidos = []
+    for carpeta in (APRENDIZ_DIR, BUNDLES_DIR, SESSION_FILES_DIR, BIMESTRAL_PACKAGE_DIR):
+        for f in carpeta.glob(f"{dominio}_*"):
+            if f.is_file():
+                leidos.append({"nombre": f.name, "datos": f.read_bytes()})
+    if not leidos:
+        raise HTTPException(status_code=404, detail=f"Sin archivos de sistema para '{dominio}'.")
+    paquete = _comprimir(leidos, org_id=dominio)
+    return {
+        "accion": "comprimido",
+        "dominio": dominio,
+        "shape_report": paquete["shape_report"],
+        "paquete": paquete,
+    }
 
 
 # ─── Registro del router y arranque ─────────────────────────────────────────
