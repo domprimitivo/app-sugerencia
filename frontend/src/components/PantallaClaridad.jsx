@@ -3,6 +3,7 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Compass } from 'lucide-react';
+import { Watermark } from './Watermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -67,6 +68,7 @@ export const PantallaClaridad = () => {
 
   return (
     <div className="min-h-screen" style={{ background: `linear-gradient(180deg, #CBDDEC 0%, ${C.sand} 45%)` }} data-testid="pantalla-claridad">
+      <Watermark />
       {/* Header mínimo */}
       <header className="sticky top-0 z-20" style={{ background: C.brick }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between">
@@ -95,7 +97,7 @@ export const PantallaClaridad = () => {
         </div>
       </header>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-[320px_1fr] gap-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 grid lg:grid-cols-[320px_1fr] gap-10 relative z-[1]">
         {/* ── Entrada (controles gráficos) ── */}
         <section data-testid="kpis-input-panel">
           <div className="flex gap-2 mb-5">
