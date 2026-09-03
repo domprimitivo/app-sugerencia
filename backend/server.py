@@ -1745,6 +1745,7 @@ from flujo_kpis import (
     listar_dominios as _listar_dominios,
     ejecutar_flujo as _ejecutar_flujo,
     ejecutar_flujo_dominio as _ejecutar_flujo_dominio,
+    listar_memoria as _listar_memoria,
 )
 
 
@@ -1783,18 +1784,26 @@ async def flujo_ejecutar(
 async def flujo_ejecutar_dominio(
     domain_id: str = Form(...),
     modo: str = Form("ASESORIA"),
+    calibrar: bool = Form(False),
     files: List[UploadFile] = File(default=[]),
 ):
     """
     Ejecuta el flujo para uno de los 6 dominios empresariales (o el demo),
     usando su propio mapa de métricas (doble hélice). Sin archivos usa la
-    operación demo de ese dominio.
+    operación demo. Si calibrar=True ajusta los rangos con los datos reales.
+    Cada ejecución se guarda en memoria COMPRIMIDA por el códec.
     """
     leidos = [{"nombre": f.filename, "datos": await f.read()} for f in (files or [])]
     try:
-        return _ejecutar_flujo_dominio(domain_id, leidos, modo=modo)
+        return _ejecutar_flujo_dominio(domain_id, leidos, modo=modo, calibrar=calibrar)
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@api_router.get("/flujo/historial/{domain_id}")
+async def flujo_historial(domain_id: str):
+    """Historial/memoria (comprimida por el códec) de un dominio."""
+    return _listar_memoria(domain_id)
 
 
 # ─── Registro del router y arranque ─────────────────────────────────────────

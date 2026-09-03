@@ -45,6 +45,7 @@ export const ArchivosEmbudo = () => {
   const [embudoOut, setEmbudoOut] = useState(null);
   const [msg, setMsg] = useState(null);
   const [domainId, setDomainId] = useState('');
+  const [calibrar, setCalibrar] = useState(false);
   const [dominios, setDominios] = useState([]);
   const [flujo, setFlujo] = useState(null);
   const [loadingFlujo, setLoadingFlujo] = useState(false);
@@ -66,6 +67,7 @@ export const ArchivosEmbudo = () => {
       const fd = new FormData();
       fd.append('domain_id', domainId);
       fd.append('modo', MODO_LAZO);
+      fd.append('calibrar', calibrar ? 'true' : 'false');
       files.forEach((f) => fd.append('files', f));
       const r = await axios.post(`${API}/flujo/ejecutar-dominio`, fd);
       setFlujo(r.data);
@@ -217,6 +219,10 @@ export const ArchivosEmbudo = () => {
               {loadingFlujo ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
               Preparar las métricas y ejecutar la observación
             </button>
+            <label className="flex items-center gap-2 text-sm cursor-pointer" style={{ color: C.ink }} data-testid="calibrar-label">
+              <input type="checkbox" checked={calibrar} onChange={(e) => setCalibrar(e.target.checked)} data-testid="calibrar-check" />
+              Calibrar rangos con datos reales
+            </label>
           </div>
           <p className="text-xs" style={{ color: C.muted }}>
             El cucurucho y sus agentes (elemento de claridad, universal) separan las métricas
@@ -284,6 +290,39 @@ export const ArchivosEmbudo = () => {
                   {flujo.lazo.geodesica_sugerida.nombre}
                 </p>
               </div>
+
+              {/* Calibración + Memoria comprimida por el códec */}
+              <div className="flex flex-wrap items-center gap-2" data-testid="flujo-meta">
+                {flujo.calibracion?.aplicada && (
+                  <span className="text-xs px-3 py-1 rounded-full font-mono"
+                    style={{ background: `${C.sky}22`, color: C.sky, border: `1px solid ${C.sky}55` }}>
+                    calibrado con datos reales · {Object.keys(flujo.calibracion.rangos || {}).length} rango(s)
+                  </span>
+                )}
+                {flujo.memoria && (
+                  <span className="text-xs px-3 py-1 rounded-full font-mono"
+                    style={{ background: `${C.grass}22`, color: C.grass, border: `1px solid ${C.grass}55` }}>
+                    memoria guardada (comprimida · {flujo.memoria.ratio}x)
+                  </span>
+                )}
+              </div>
+
+              {flujo.historial?.length > 0 && (
+                <div data-testid="flujo-historial">
+                  <p className="text-[11px] font-mono uppercase tracking-wider mb-2" style={{ color: C.muted }}>
+                    Historial · memoria comprimida por el códec ({flujo.historial.length})
+                  </p>
+                  <div className="space-y-1">
+                    {flujo.historial.slice(0, 6).map((h, i) => (
+                      <div key={h.id} className="flex items-center gap-3 text-xs" data-testid={`historial-${i}`}>
+                        <FileArchive className="w-3.5 h-3.5" style={{ color: C.brick }} />
+                        <span className="flex-1 truncate" style={{ color: C.ink }}>{h.created}</span>
+                        <span className="font-mono" style={{ color: C.muted }}>{h.ratio}x</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </section>

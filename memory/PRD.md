@@ -87,6 +87,18 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
 - Tests: `backend/tests/test_lazo.py`, `backend/tests/test_compresion.py`.
 
 ## Backlog / Next
+
+### 6) Calibración real + columnas reales + memoria comprimida (2026-09-02)
+- **Auto-calibración**: `POST /api/flujo/ejecutar-dominio` acepta `calibrar=true`; ajusta los
+  rangos de normalización de cada métrica con el min/max observado en los archivos reales
+  (el semáforo refleja la operación exacta). Devuelve `calibracion.rangos` aplicados.
+- **Columnas reales**: `_mapear_columnas` + `SINONIMOS` mapean nombres reales de columnas
+  (occupancy→ocupacion_pct, otif, ventas, etc.) a las señales esperadas por dominio; ya no
+  depende del demo cuando se suben archivos.
+- **Memoria comprimida**: cada ejecución se guarda automáticamente COMPRIMIDA por el códec
+  MOCG en `backend/flujo/memoria/{domain_id}/`. Endpoint `GET /api/flujo/historial/{domain_id}`.
+  Frontend muestra checkbox "Calibrar", etiqueta de memoria (ratio) e historial. Testeado.
+
 - P2: Pantalla de configuración inicial en React (hoy el sistema no está "configurado",
   por eso el embudo RAG pide configuración). El flujo real vive en el exe Flutter.
 - P2: Descarga directa del paquete/archivos del sistema comprimido desde /archivos.

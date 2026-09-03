@@ -17,16 +17,41 @@ Dominios empresariales (6) = únicos válidos. El palenque de mezcal
 import json
 import csv
 import io
+import re
+import time
+import uuid
 from pathlib import Path
 from typing import Dict, List, Optional
 
 import numpy as np
 
 from lazo_generico import DOMINIO_CVD, lazo_asesoria, lazo_agencia
+from compresion_geometrica import comprimir as _comprimir_codec
 
 BASE = Path(__file__).resolve().parent
 FLUJO_DIR = BASE / "flujo"
+MEMORIA_DIR = FLUJO_DIR / "memoria"
 MAIN_DIR = BASE.parent  # /app (donde viven los cucurucho_*.json de los 6 dominios)
+
+# Sinónimos de nombres de columnas reales → campo canónico esperado por dominio.
+SINONIMOS = {
+    "ocupacion_pct": ["occupancy", "ocupacion", "occ", "occup"],
+    "ocupacion_agenda": ["agenda", "citas_ocupadas", "booking"],
+    "ocupacion_carga": ["fill_rate", "carga", "loadfactor"],
+    "otif": ["ontimeinfull", "on_time_in_full", "cumplimiento"],
+    "a_tiempo": ["ontime", "puntualidad", "a_tiempo_pct"],
+    "ticket_promedio": ["avgticket", "ticket_medio", "aov"],
+    "conversion": ["conversion_rate", "cr", "tasa_conversion"],
+    "pagos_a_tiempo": ["pagospuntuales", "on_time_payments", "cxc_a_tiempo"],
+    "flujo_caja": ["cashflow", "flujo", "liquidez"],
+    "cartera_vencida": ["overdue", "vencido", "mora"],
+    "satisfaccion": ["csat", "nps", "satisfaction"],
+    "quejas": ["complaints", "reclamos", "tickets_queja"],
+    "devoluciones": ["returns", "devol", "refunds"],
+    "defectos": ["defects", "ppm", "no_conformes"],
+    "oee": ["overall_equipment", "eficiencia_global"],
+    "no_show": ["noshow", "inasistencia", "ausencias_cita"],
+}
 
 # Los 6 dominios empresariales válidos (únicos productivos)
 DOMINIOS_EMPRESARIALES = [
@@ -132,19 +157,88 @@ def _agg_numericos(datos: bytes) -> Dict[str, float]:
         return {}
 
 
-def extraer_senales(archivos: List[dict], params: dict) -> Dict[str, Dict[str, float]]:
+def _extraer_columnas(datos: bytes) -> Dict[str, list]:
+    """Devuelve {columna: [valores numéricos]} desde CSV/JSON (para calibrar rangos)."""
+    try:
+        texto = datos.decode("utf-8")
+    except Exception:
+        return {}
+    acc: Dict[str, list] = {}
+    try:
+        obj = json.loads(texto)
+        rows = obj if isinstance(obj, list) else [obj]
+        for row in rows:
+            if isinstance(row, dict):
+                for k, v in row.items():
+                    if isinstance(v, (int, float)) and not isinstance(v, bool):
+                        acc.setdefault(k, []).append(float(v))
+        if acc:
+            return acc
+    except Exception:
+        pass
+    try:
+        for row in csv.DictReader(io.StringIO(texto)):
+            for k, v in row.items():
+                try:
+                    acc.setdefault(k, []).append(float(v))
+                except (TypeError, ValueError):
+                    continue
+    except Exception:
+        pass
+    return acc
+
+
+def _norm_name(s: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", str(s).lower())
+
+
+def _mapear_columnas(cols: Dict[str, list], esperadas: List[str]) -> Dict[str, list]:
+    """Mapea nombres de columnas REALES → campo canónico esperado (alias + sinónimos)."""
+    normmap = {_norm_name(k): k for k in cols}
+    out: Dict[str, list] = {}
+    for canon in esperadas:
+        nc = _norm_name(canon)
+        found = normmap.get(nc)
+        if not found:
+            for rn, orig in normmap.items():
+                if nc and (nc in rn or rn in nc):
+                    found = orig
+                    break
+        if not found:
+            for syn in SINONIMOS.get(canon, []):
+                ns = _norm_name(syn)
+                for rn, orig in normmap.items():
+                    if ns and (ns in rn or rn in ns):
+                        found = orig
+                        break
+                if found:
+                    break
+        if found:
+            out[canon] = cols[found]
+    return out
+
+
+def extraer_senales(archivos: List[dict], mapa: dict):
     """
-    Parte del baseline demo y superpone lo que traigan los archivos reales
-    (categoría detectada por nombre). Devuelve señales por categoría.
+    Parte del baseline demo y superpone datos REALES (columnas mapeadas por dominio).
+    Devuelve (senales, rangos_observados) — los rangos sirven para auto-calibrar.
     """
-    categorias = params.get("categorias_operacion", {})
-    senales = json.loads(json.dumps(params.get("demo_operacion", {})))  # baseline demo
+    categorias = mapa.get("categorias_operacion", {})
+    senales = json.loads(json.dumps(mapa.get("demo_operacion", {})))  # baseline demo
+    rangos: Dict[str, list] = {}
     for a in archivos or []:
         cat = _categoria_de(a["nombre"], categorias)
         if not cat:
             continue
-        senales.setdefault(cat, {}).update(_agg_numericos(a["datos"]))
-    return senales
+        cols = _extraer_columnas(a["datos"])
+        esperadas = categorias.get(cat, {}).get("columnas_esperadas", [])
+        cols = _mapear_columnas(cols, esperadas)
+        for canon, vals in cols.items():
+            if not vals:
+                continue
+            senales.setdefault(cat, {})[canon] = round(float(np.mean(vals)), 4)
+            rangos[f"{cat}.{canon}"] = [float(min(vals)), float(max(vals))]
+    return senales, rangos
 
 
 def _norm(v: float, lo: float, hi: float) -> float:
@@ -153,10 +247,16 @@ def _norm(v: float, lo: float, hi: float) -> float:
     return max(0.0, min(1.0, (v - lo) / (hi - lo)))
 
 
-def preparar_kpis(senales: Dict[str, Dict[str, float]], params: dict) -> Dict[str, float]:
-    """AG5: separa los 7 KPIs holográficos (0-1) desde las señales de operación."""
+def preparar_kpis(senales: Dict[str, Dict[str, float]], mapa: dict,
+                  rangos: Optional[dict] = None, calibrar: bool = False):
+    """
+    AG5: separa los 7 KPIs (0-1). Si calibrar=True usa el rango observado en los
+    datos reales para cada señal (el semáforo refleja la operación exacta).
+    Devuelve (kpis, calibracion_aplicada).
+    """
     kpis: Dict[str, float] = {}
-    for kpi, terminos in params.get("kpi_map", {}).items():
+    calib: Dict[str, list] = {}
+    for kpi, terminos in mapa.get("kpi_map", {}).items():
         total = 0.0
         peso_total = 0.0
         for t in terminos:
@@ -165,13 +265,18 @@ def preparar_kpis(senales: Dict[str, Dict[str, float]], params: dict) -> Dict[st
             if val is None:
                 continue
             lo, hi = t.get("norm", [0.0, 1.0])
+            if calibrar and rangos and t["signal"] in rangos:
+                rlo, rhi = rangos[t["signal"]]
+                if rhi > rlo:
+                    lo, hi = rlo, rhi
+                    calib[t["signal"]] = [round(lo, 3), round(hi, 3)]
             x = _norm(float(val), lo, hi)
             if t.get("invertir"):
                 x = 1.0 - x
             total += t.get("peso", 1.0) * x
             peso_total += t.get("peso", 1.0)
         kpis[kpi] = round(total / peso_total, 4) if peso_total else 0.5
-    return kpis
+    return kpis, calib
 
 
 def detalle_discreto(senales: Dict[str, Dict[str, float]], params: dict) -> Dict[str, list]:
@@ -256,7 +361,38 @@ def _descriptor_dominio(domain_id: str) -> str:
     return domain_id
 
 
-def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "ASESORIA") -> dict:
+def guardar_memoria(domain_id: str, observacion: dict) -> dict:
+    """Guarda la observación en memoria, COMPRIMIDA automáticamente por el códec."""
+    d = MEMORIA_DIR / domain_id
+    d.mkdir(parents=True, exist_ok=True)
+    payload = json.dumps(observacion, ensure_ascii=False).encode("utf-8")
+    paquete = _comprimir_codec([{"nombre": "observacion.json", "datos": payload}], org_id=domain_id)
+    rid = f"{int(time.time())}_{uuid.uuid4().hex[:6]}"
+    (d / f"{rid}.mocg.json").write_text(json.dumps(paquete), encoding="utf-8")
+    sr = paquete.get("shape_report", {}).get("compression", {})
+    return {"id": rid, "created": paquete.get("created_utc"),
+            "ratio": sr.get("ratio"), "original_bytes": sr.get("original_bytes")}
+
+
+def listar_memoria(domain_id: str) -> List[dict]:
+    d = MEMORIA_DIR / domain_id
+    if not d.exists():
+        return []
+    out = []
+    for f in sorted(d.glob("*.mocg.json"), reverse=True)[:20]:
+        try:
+            pkg = json.loads(f.read_text(encoding="utf-8"))
+            sr = pkg.get("shape_report", {})
+            out.append({"id": f.stem, "created": pkg.get("created_utc"),
+                        "ratio": sr.get("compression", {}).get("ratio"),
+                        "comprimido": True})
+        except Exception:
+            continue
+    return out
+
+
+def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "ASESORIA",
+                           calibrar: bool = False) -> dict:
     """Flujo por dominio (los 6 empresariales o el demo): cada uno con su doble hélice."""
     es_demo = domain_id == "dom_fermentacion_lotes_v1"
     mapa = cargar_mapa_dominio(domain_id)
@@ -265,12 +401,19 @@ def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "AS
     dominio = {"domain_id": domain_id, "descriptor": _descriptor_dominio(domain_id),
                "es_demo": es_demo, "umbrales_operativos": UMBRALES_STD}
 
-    senales = extraer_senales(archivos, mapa)
-    kpis = preparar_kpis(senales, mapa)
+    senales, rangos = extraer_senales(archivos, mapa)
+    kpis, calib = preparar_kpis(senales, mapa, rangos, calibrar)
     discretos = detalle_discreto(senales, mapa)
     control = control_features(kpis, dominio, {})
     resultado_lazo = lazo_asesoria(kpis, DOMINIO_CVD) if modo == "ASESORIA" \
         else lazo_agencia(kpis, DOMINIO_CVD)
+
+    memoria = guardar_memoria(domain_id, {
+        "domain_id": domain_id, "descriptor": dominio["descriptor"],
+        "kpis": kpis, "control": control, "senales": senales,
+        "estado": resultado_lazo["estado_general"],
+        "trayectoria": resultado_lazo["geodesica_sugerida"]["nombre"],
+    })
 
     return {
         "cliente": {"client_id": domain_id, "client_name": dominio["descriptor"],
@@ -282,6 +425,9 @@ def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "AS
         "kpis_holograficos": kpis,
         "metricas_discretas": discretos,
         "features_control": control,
+        "calibracion": {"aplicada": calibrar, "rangos": calib},
+        "memoria": memoria,
+        "historial": listar_memoria(domain_id),
         "lazo": resultado_lazo,
     }
 
@@ -296,8 +442,8 @@ def ejecutar_flujo(client_id: str, archivos: List[dict], modo: str = "ASESORIA")
     params = cargar_params(dominio.get("params_ref", "palenque_fermentacion_params"))
     cucurucho = cargar_cucurucho()
 
-    senales = extraer_senales(archivos, params)
-    kpis = preparar_kpis(senales, params)                    # entrada LIMPIA para el lazo
+    senales, _rangos = extraer_senales(archivos, params)
+    kpis, _calib = preparar_kpis(senales, params)            # entrada LIMPIA para el lazo
     discretos = detalle_discreto(senales, params)            # armonía discreto ↔ geométrico
     control = control_features(kpis, dominio, cliente.get("overrides", {}))
 
