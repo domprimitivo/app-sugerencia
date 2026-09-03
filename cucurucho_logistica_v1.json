@@ -195,5 +195,219 @@
         "panel_incidentes_logisticos"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "entregas": {
+        "keywords": [
+          "entrega",
+          "otif",
+          "sla"
+        ],
+        "columnas_esperadas": [
+          "otif",
+          "a_tiempo",
+          "fallidas"
+        ]
+      },
+      "rutas": {
+        "keywords": [
+          "ruta",
+          "km",
+          "planif"
+        ],
+        "columnas_esperadas": [
+          "ocupacion_carga",
+          "desvio_km",
+          "reprogramaciones"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "costo_km"
+        ]
+      },
+      "flota": {
+        "keywords": [
+          "flota",
+          "vehic",
+          "manten"
+        ],
+        "columnas_esperadas": [
+          "disponibilidad",
+          "averias"
+        ]
+      },
+      "personal": {
+        "keywords": [
+          "personal",
+          "conductor"
+        ],
+        "columnas_esperadas": [
+          "ausentismo",
+          "satisfaccion"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "entregas.a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "rutas.ocupacion_carga",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "rutas.desvio_km",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "finanzas.costo_km",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "entregas.fallidas",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "rutas.reprogramaciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "flota.averias",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "rutas.reprogramaciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "entregas.fallidas",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "flota.averias",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "entregas.otif",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "personal.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ]
+    },
+    "demo_operacion": {
+      "entregas": {
+        "otif": 0.82,
+        "a_tiempo": 0.85,
+        "fallidas": 0.07
+      },
+      "rutas": {
+        "ocupacion_carga": 0.7,
+        "desvio_km": 0.15,
+        "reprogramaciones": 0.09
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.87,
+        "flujo_caja": 0.69,
+        "costo_km": 0.4
+      },
+      "flota": {
+        "disponibilidad": 0.9,
+        "averias": 0.06
+      },
+      "personal": {
+        "ausentismo": 0.1,
+        "satisfaccion": 0.75
+      }
+    }
   }
 }

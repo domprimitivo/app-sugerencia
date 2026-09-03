@@ -196,5 +196,220 @@
         "panel_pickup_y_revenue"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "ocupacion": {
+        "keywords": [
+          "ocupa",
+          "reserva",
+          "checkin"
+        ],
+        "columnas_esperadas": [
+          "ocupacion_pct",
+          "no_show",
+          "checkins_dia"
+        ]
+      },
+      "tarifas": {
+        "keywords": [
+          "tarifa",
+          "adr",
+          "revpar"
+        ],
+        "columnas_esperadas": [
+          "revpar",
+          "descuento_pct"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "cartera_vencida"
+        ]
+      },
+      "servicio": {
+        "keywords": [
+          "servicio",
+          "huesped",
+          "calidad"
+        ],
+        "columnas_esperadas": [
+          "satisfaccion",
+          "quejas",
+          "reprocesos"
+        ]
+      },
+      "canales": {
+        "keywords": [
+          "canal",
+          "ota",
+          "directo"
+        ],
+        "columnas_esperadas": [
+          "dependencia_ota",
+          "conversion_directa"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "ocupacion.ocupacion_pct",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "tarifas.revpar",
+          "norm": [
+            0,
+            2500
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "canales.dependencia_ota",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "finanzas.cartera_vencida",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "servicio.quejas",
+          "norm": [
+            0,
+            50
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "servicio.reprocesos",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "ocupacion.no_show",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "tarifas.descuento_pct",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "servicio.quejas",
+          "norm": [
+            0,
+            50
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "finanzas.cartera_vencida",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "servicio.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "canales.conversion_directa",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ]
+    },
+    "demo_operacion": {
+      "ocupacion": {
+        "ocupacion_pct": 0.72,
+        "no_show": 0.09,
+        "checkins_dia": 40
+      },
+      "tarifas": {
+        "revpar": 1450,
+        "descuento_pct": 0.18
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.88,
+        "flujo_caja": 0.7,
+        "cartera_vencida": 0.12
+      },
+      "servicio": {
+        "satisfaccion": 0.8,
+        "quejas": 8,
+        "reprocesos": 0.07
+      },
+      "canales": {
+        "dependencia_ota": 0.6,
+        "conversion_directa": 0.4
+      }
+    }
   }
 }

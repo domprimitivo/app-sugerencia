@@ -1,0 +1,18 @@
+{
+  "summary": "Verificación end-to-end del flujo por dominio (6 empresariales + 1 demo). Backend: 9/9 pytest passed sobre GET /api/flujo/dominios y POST /api/flujo/ejecutar-dominio para cada dominio; los 7 KPIs se generan con datos discretos, features_control y lazo, y las firmas de KPIs son distintas entre dominios. Frontend /archivos: flujo-dominio-select se puebla con las 7 opciones esperadas (Restaurante, Retail, Hotelería, Fábrica, Logística, Clínica + demo palenque); al ejecutar Hotelería y luego Fábrica se renderizan 7 tiles flujo-kpi-* con semáforo + valor + detalle discreto (dato tradicional ↔ geométrico), flujo-control con 3 flags (viabilidad / suelo R / Δ coherencia) y flujo-lazo con Trayectoria + geodésica sugerida. Regresión: comprimir-btn presente y ejercido previamente en iter 5.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_flujo_dominios.py", "/app/test_reports/pytest/flujo_dominios.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "flujo_kpis.py: hay un docstring huérfano en línea 287 fuera de función (justo antes de def ejecutar_flujo). Es inocuo pero conviene moverlo dentro del def para evitar confusión.",
+    "ArchivosEmbudo.jsx (377 líneas): sigue en el umbral aceptable pero se acerca al límite; considerar extraer el <section flujo-panel> a un subcomponente."
+  ],
+  "updated_files": ["/app/backend/tests/test_flujo_dominios.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Ninguna. Usa los cucurucho_{sector}_v1.json de /app y el params palenque_fermentacion_params seedeado.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Los 6 dominios empresariales + demo funcionan. Verificado por pytest (parametrizado) y por Playwright real con select real y clicks reales. KPIs son distintos entre dominios (>=4 firmas únicas). Frontend hardcodea modo ASESORIA (ArchivosEmbudo.jsx L26). data-testids relevantes: flujo-panel, flujo-dominio-select, ejecutar-flujo-btn, flujo-resultado, flujo-kpi-{Permeabilidad|Tensión TR|Sutura|Retorno al Suelo|Estancamiento|Ruptura de Fase|Resonancia}, flujo-control, flujo-lazo, comprimir-btn.",
+  "test_credentials": "None (no auth)"
+}

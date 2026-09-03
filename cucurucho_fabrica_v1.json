@@ -196,5 +196,221 @@
         "panel_maquinaria_y_eficiencia"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "produccion": {
+        "keywords": [
+          "produc",
+          "oee",
+          "linea"
+        ],
+        "columnas_esperadas": [
+          "oee",
+          "throughput",
+          "paros"
+        ]
+      },
+      "calidad": {
+        "keywords": [
+          "calidad",
+          "defecto",
+          "scrap"
+        ],
+        "columnas_esperadas": [
+          "defectos",
+          "scrap",
+          "reprocesos"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "costo_unitario"
+        ]
+      },
+      "mantenimiento": {
+        "keywords": [
+          "manten",
+          "mtbf",
+          "mttr"
+        ],
+        "columnas_esperadas": [
+          "mtbf",
+          "mttr",
+          "paros_no_prog"
+        ]
+      },
+      "personal": {
+        "keywords": [
+          "personal",
+          "turno"
+        ],
+        "columnas_esperadas": [
+          "ausentismo",
+          "satisfaccion"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "produccion.oee",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "produccion.throughput",
+          "norm": [
+            0,
+            1000
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "produccion.paros",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "finanzas.costo_unitario",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "calidad.defectos",
+          "norm": [
+            0,
+            0.2
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "calidad.reprocesos",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "mantenimiento.mttr",
+          "norm": [
+            0,
+            24
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "mantenimiento.paros_no_prog",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "calidad.scrap",
+          "norm": [
+            0,
+            0.2
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "produccion.paros",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "personal.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "produccion.oee",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ]
+    },
+    "demo_operacion": {
+      "produccion": {
+        "oee": 0.68,
+        "throughput": 620,
+        "paros": 0.22
+      },
+      "calidad": {
+        "defectos": 0.05,
+        "scrap": 0.04,
+        "reprocesos": 0.08
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.84,
+        "flujo_caja": 0.66,
+        "costo_unitario": 0.45
+      },
+      "mantenimiento": {
+        "mtbf": 180,
+        "mttr": 6,
+        "paros_no_prog": 0.2
+      },
+      "personal": {
+        "ausentismo": 0.11,
+        "satisfaccion": 0.72
+      }
+    }
   }
 }

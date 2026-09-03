@@ -44,27 +44,30 @@ export const ArchivosEmbudo = () => {
   const [reconstruidos, setReconstruidos] = useState(null);
   const [embudoOut, setEmbudoOut] = useState(null);
   const [msg, setMsg] = useState(null);
-  const [clientes, setClientes] = useState([]);
-  const [clientId, setClientId] = useState('');
+  const [domainId, setDomainId] = useState('');
+  const [dominios, setDominios] = useState([]);
   const [flujo, setFlujo] = useState(null);
   const [loadingFlujo, setLoadingFlujo] = useState(false);
 
   useEffect(() => {
-    axios.get(`${API}/flujo/clientes`).then((r) => {
-      setClientes(r.data);
-      if (r.data.length) setClientId(r.data[0].client_id);
+    axios.get(`${API}/flujo/dominios`).then((r) => {
+      const emp = (r.data.empresariales || []).map((d) => ({ ...d, es_demo: false }));
+      const demo = (r.data.demostracion || []).map((d) => ({ ...d, es_demo: true }));
+      const all = [...emp, ...demo];
+      setDominios(all);
+      if (all.length) setDomainId(all[0].domain_id);
     }).catch(() => {});
   }, []);
 
   const ejecutarFlujo = async () => {
-    if (!clientId) { setMsg('Selecciona un cliente.'); return; }
+    if (!domainId) { setMsg('Selecciona un tipo de empresa.'); return; }
     setLoadingFlujo(true); setFlujo(null); setMsg(null);
     try {
       const fd = new FormData();
-      fd.append('client_id', clientId);
+      fd.append('domain_id', domainId);
       fd.append('modo', MODO_LAZO);
       files.forEach((f) => fd.append('files', f));
-      const r = await axios.post(`${API}/flujo/ejecutar`, fd);
+      const r = await axios.post(`${API}/flujo/ejecutar-dominio`, fd);
       setFlujo(r.data);
     } catch (e) {
       setMsg('Flujo: ' + (e.response?.data?.detail || e.message));
@@ -192,15 +195,15 @@ export const ArchivosEmbudo = () => {
           </h2>
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <select
-              value={clientId}
-              onChange={(e) => { setClientId(e.target.value); setFlujo(null); }}
+              value={domainId}
+              onChange={(e) => { setDomainId(e.target.value); setFlujo(null); }}
               className="rounded-full px-4 py-2 text-sm"
               style={{ background: '#FFFFFF88', border: `1px solid ${C.border}`, color: C.ink }}
-              data-testid="flujo-cliente-select"
+              data-testid="flujo-dominio-select"
             >
-              {clientes.map((c) => (
-                <option key={c.client_id} value={c.client_id}>
-                  {c.client_name} · {c.domain_ref}
+              {dominios.map((d) => (
+                <option key={d.domain_id} value={d.domain_id}>
+                  {d.descriptor}{d.es_demo ? ' · (demostración)' : ''}
                 </option>
               ))}
             </select>

@@ -195,5 +195,220 @@
         "panel_privacidad_y_trazabilidad"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "agenda": {
+        "keywords": [
+          "agenda",
+          "cita",
+          "turno"
+        ],
+        "columnas_esperadas": [
+          "ocupacion_agenda",
+          "no_show",
+          "espera_dias"
+        ]
+      },
+      "clinico": {
+        "keywords": [
+          "clinic",
+          "evento",
+          "adverso"
+        ],
+        "columnas_esperadas": [
+          "eventos_adversos",
+          "reingresos",
+          "satisfaccion"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "cartera_vencida"
+        ]
+      },
+      "personal": {
+        "keywords": [
+          "personal",
+          "clinico",
+          "rrhh"
+        ],
+        "columnas_esperadas": [
+          "ausentismo",
+          "satisfaccion"
+        ]
+      },
+      "insumos": {
+        "keywords": [
+          "insumo",
+          "stock",
+          "farmacia"
+        ],
+        "columnas_esperadas": [
+          "quiebre_stock",
+          "caducados"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "agenda.ocupacion_agenda",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "clinico.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "agenda.espera_dias",
+          "norm": [
+            0,
+            30
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "finanzas.cartera_vencida",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "clinico.eventos_adversos",
+          "norm": [
+            0,
+            0.2
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "clinico.reingresos",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "agenda.no_show",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "insumos.quiebre_stock",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "clinico.eventos_adversos",
+          "norm": [
+            0,
+            0.2
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "insumos.caducados",
+          "norm": [
+            0,
+            0.2
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "clinico.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "personal.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ]
+    },
+    "demo_operacion": {
+      "agenda": {
+        "ocupacion_agenda": 0.78,
+        "no_show": 0.12,
+        "espera_dias": 9
+      },
+      "clinico": {
+        "eventos_adversos": 0.03,
+        "reingresos": 0.06,
+        "satisfaccion": 0.83
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.89,
+        "flujo_caja": 0.71,
+        "cartera_vencida": 0.1
+      },
+      "personal": {
+        "ausentismo": 0.09,
+        "satisfaccion": 0.78
+      },
+      "insumos": {
+        "quiebre_stock": 0.14,
+        "caducados": 0.03
+      }
+    }
   }
 }

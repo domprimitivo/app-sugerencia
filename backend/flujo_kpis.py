@@ -26,6 +26,7 @@ from lazo_generico import DOMINIO_CVD, lazo_asesoria, lazo_agencia
 
 BASE = Path(__file__).resolve().parent
 FLUJO_DIR = BASE / "flujo"
+MAIN_DIR = BASE.parent  # /app (donde viven los cucurucho_*.json de los 6 dominios)
 
 # Los 6 dominios empresariales válidos (únicos productivos)
 DOMINIOS_EMPRESARIALES = [
@@ -216,8 +217,77 @@ def agentes_activos(cucurucho: dict) -> List[dict]:
             for k, v in core.items() if v.get("activo")]
 
 
+POLOS_STD = ["Permeabilidad", "Tensión TR", "Sutura", "Retorno al Suelo",
+             "Estancamiento", "Ruptura de Fase", "Resonancia"]
+UMBRALES_STD = {"c_viabilidad_critico": 1.070, "firmeza_suelo_minima_R": 0.60, "delta_max_coherencia": 0.12}
+
+
+def _sector(domain_id: str) -> str:
+    s = domain_id
+    if s.startswith("dom_"):
+        s = s[4:]
+    if s.endswith("_v1"):
+        s = s[:-3]
+    return s
+
+
+def cargar_mapa_dominio(domain_id: str) -> dict:
+    """
+    Mapa de las 7 métricas (doble hélice: dato tradicional ↔ geométrico) para
+    el dominio. Demo → params palenque. Empresarial → mapa_metricas del
+    cucurucho_{sector}_v1.json en main.
+    """
+    if domain_id == "dom_fermentacion_lotes_v1":
+        return cargar_params("palenque_fermentacion_params")
+    p = MAIN_DIR / f"cucurucho_{_sector(domain_id)}_v1.json"
+    if not p.exists():
+        raise FileNotFoundError(f"Cucurucho de dominio no encontrado: {p.name}")
+    cfg = _load_json(p)
+    mapa = cfg.get("mapa_metricas")
+    if not mapa:
+        raise FileNotFoundError(f"El cucurucho {p.name} no define 'mapa_metricas'.")
+    return mapa
+
+
+def _descriptor_dominio(domain_id: str) -> str:
+    for d in DOMINIOS_EMPRESARIALES:
+        if d["domain_id"] == domain_id:
+            return d["descriptor"]
+    return domain_id
+
+
+def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "ASESORIA") -> dict:
+    """Flujo por dominio (los 6 empresariales o el demo): cada uno con su doble hélice."""
+    es_demo = domain_id == "dom_fermentacion_lotes_v1"
+    mapa = cargar_mapa_dominio(domain_id)
+    cucurucho = cargar_cucurucho()
+
+    dominio = {"domain_id": domain_id, "descriptor": _descriptor_dominio(domain_id),
+               "es_demo": es_demo, "umbrales_operativos": UMBRALES_STD}
+
+    senales = extraer_senales(archivos, mapa)
+    kpis = preparar_kpis(senales, mapa)
+    discretos = detalle_discreto(senales, mapa)
+    control = control_features(kpis, dominio, {})
+    resultado_lazo = lazo_asesoria(kpis, DOMINIO_CVD) if modo == "ASESORIA" \
+        else lazo_agencia(kpis, DOMINIO_CVD)
+
+    return {
+        "cliente": {"client_id": domain_id, "client_name": dominio["descriptor"],
+                    "active_subscription": True, "overrides": {}},
+        "dominio": {"domain_id": domain_id, "descriptor": dominio["descriptor"],
+                    "es_demo": es_demo, "polos": POLOS_STD},
+        "cucurucho": {"id": cucurucho["id_config"], "agentes": agentes_activos(cucurucho)},
+        "senales_operacion": senales,
+        "kpis_holograficos": kpis,
+        "metricas_discretas": discretos,
+        "features_control": control,
+        "lazo": resultado_lazo,
+    }
+
+
 def ejecutar_flujo(client_id: str, archivos: List[dict], modo: str = "ASESORIA") -> dict:
-    """Flujo completo: cliente → dominio → cucurucho (KPIs limpios) → lazo."""
+    """Flujo completo por CLIENTE: cliente → dominio → cucurucho → lazo."""
     cliente = cargar_cliente(client_id)
     if not cliente.get("active_subscription"):
         raise PermissionError("La suscripción del cliente no está activa.")

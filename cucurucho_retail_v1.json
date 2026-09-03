@@ -196,5 +196,221 @@
         "panel_merma_y_rotacion"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "inventario": {
+        "keywords": [
+          "inventar",
+          "stock",
+          "almacen"
+        ],
+        "columnas_esperadas": [
+          "rotacion",
+          "quiebre_stock",
+          "estancado_dias"
+        ]
+      },
+      "ventas": {
+        "keywords": [
+          "venta",
+          "pos",
+          "ticket"
+        ],
+        "columnas_esperadas": [
+          "conversion",
+          "ticket_promedio",
+          "devoluciones"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "margen"
+        ]
+      },
+      "personal": {
+        "keywords": [
+          "personal",
+          "turno"
+        ],
+        "columnas_esperadas": [
+          "ausentismo",
+          "satisfaccion"
+        ]
+      },
+      "canales": {
+        "keywords": [
+          "canal",
+          "online",
+          "tienda"
+        ],
+        "columnas_esperadas": [
+          "dependencia_marketplace",
+          "conversion_directa",
+          "quejas"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "inventario.rotacion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "ventas.conversion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "inventario.quiebre_stock",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.margen",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "ventas.devoluciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "inventario.quiebre_stock",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "inventario.estancado_dias",
+          "norm": [
+            0,
+            60
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "personal.ausentismo",
+          "norm": [
+            0,
+            0.4
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "canales.quejas",
+          "norm": [
+            0,
+            50
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "ventas.devoluciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "personal.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "canales.conversion_directa",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ]
+    },
+    "demo_operacion": {
+      "inventario": {
+        "rotacion": 0.58,
+        "quiebre_stock": 0.18,
+        "estancado_dias": 22
+      },
+      "ventas": {
+        "conversion": 0.31,
+        "ticket_promedio": 540,
+        "devoluciones": 0.06
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.9,
+        "flujo_caja": 0.72,
+        "margen": 0.38
+      },
+      "personal": {
+        "ausentismo": 0.1,
+        "satisfaccion": 0.77
+      },
+      "canales": {
+        "dependencia_marketplace": 0.5,
+        "conversion_directa": 0.44,
+        "quejas": 7
+      }
+    }
   }
 }

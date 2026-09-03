@@ -60,6 +60,19 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
   (variará más adelante). Backend expone `metricas_discretas` (dato discreto ↔ geométrico).
 
 ## Estilo / Paleta (2026-09-02)
+
+### 5) Doble hélice por dominio — 7 métricas para los 6 tipos de empresa (2026-09-02)
+- Cada `cucurucho_{sector}_v1.json` en `/app` (main) se amplió con `mapa_metricas`
+  (categorias_operacion + kpi_map + demo_operacion) que define qué significa cada una de
+  las 7 métricas geométricas para ese dominio (restaurante, retail, hotel, fábrica,
+  logística, clínica). Así cada uno tiene su doble hélice: dato tradicional (discreto) ↔
+  contraparte geométrica, y entrega el input necesario al elemento de habitabilidad.
+- Backend `flujo_kpis.py`: `cargar_mapa_dominio` lee el `mapa_metricas` del cucurucho en
+  main; `ejecutar_flujo_dominio(domain_id,...)`. Endpoint `POST /api/flujo/ejecutar-dominio`.
+- Frontend `/archivos`: selector `flujo-dominio-select` (6 empresariales + demo palenque);
+  ejecutar por dominio muestra las 7 métricas (semáforo + valor + detalle discreto) + control
+  + trayectoria. Elemento de claridad (cucurucho+agentes) universal e intacto. Testeado 100%
+  (pytest parametrizado + Playwright).
 - Paleta arquitectónica (ladrillo/cielo/césped/arena) en `/claridad` y `/archivos`.
 - Marca de agua `Watermark.jsx` (acuarela clara de las dos épocas + cielo, degradada).
 

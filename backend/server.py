@@ -1744,6 +1744,7 @@ from flujo_kpis import (
     listar_clientes as _listar_clientes,
     listar_dominios as _listar_dominios,
     ejecutar_flujo as _ejecutar_flujo,
+    ejecutar_flujo_dominio as _ejecutar_flujo_dominio,
 )
 
 
@@ -1776,6 +1777,24 @@ async def flujo_ejecutar(
         raise HTTPException(status_code=404, detail=str(e))
     except PermissionError as e:
         raise HTTPException(status_code=403, detail=str(e))
+
+
+@api_router.post("/flujo/ejecutar-dominio")
+async def flujo_ejecutar_dominio(
+    domain_id: str = Form(...),
+    modo: str = Form("ASESORIA"),
+    files: List[UploadFile] = File(default=[]),
+):
+    """
+    Ejecuta el flujo para uno de los 6 dominios empresariales (o el demo),
+    usando su propio mapa de métricas (doble hélice). Sin archivos usa la
+    operación demo de ese dominio.
+    """
+    leidos = [{"nombre": f.filename, "datos": await f.read()} for f in (files or [])]
+    try:
+        return _ejecutar_flujo_dominio(domain_id, leidos, modo=modo)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
 
 
 # ─── Registro del router y arranque ─────────────────────────────────────────

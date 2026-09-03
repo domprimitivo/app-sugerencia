@@ -195,5 +195,224 @@
         "panel_turnos_y_picos"
       ]
     }
+  },
+  "mapa_metricas": {
+    "categorias_operacion": {
+      "cocina": {
+        "keywords": [
+          "cocina",
+          "comanda",
+          "kds"
+        ],
+        "columnas_esperadas": [
+          "tickets_hora",
+          "tiempo_prep",
+          "merma"
+        ]
+      },
+      "ventas": {
+        "keywords": [
+          "venta",
+          "ticket",
+          "pos"
+        ],
+        "columnas_esperadas": [
+          "ticket_promedio",
+          "rotacion_mesas",
+          "cancelaciones"
+        ]
+      },
+      "finanzas": {
+        "keywords": [
+          "finanz",
+          "pago",
+          "caja"
+        ],
+        "columnas_esperadas": [
+          "pagos_a_tiempo",
+          "flujo_caja",
+          "costo_insumos"
+        ]
+      },
+      "personal": {
+        "keywords": [
+          "personal",
+          "turno",
+          "rrhh"
+        ],
+        "columnas_esperadas": [
+          "ausentismo",
+          "rotacion_staff",
+          "satisfaccion"
+        ]
+      },
+      "canales": {
+        "keywords": [
+          "canal",
+          "delivery",
+          "reserva"
+        ],
+        "columnas_esperadas": [
+          "dependencia_apps",
+          "conversion_directa",
+          "quejas"
+        ]
+      }
+    },
+    "kpi_map": {
+      "Permeabilidad": [
+        {
+          "signal": "cocina.tickets_hora",
+          "norm": [
+            0,
+            60
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "ventas.rotacion_mesas",
+          "norm": [
+            0,
+            6
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Tensión TR": [
+        {
+          "signal": "cocina.tiempo_prep",
+          "norm": [
+            0,
+            40
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.costo_insumos",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Sutura": [
+        {
+          "signal": "ventas.cancelaciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "cocina.merma",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Retorno al Suelo": [
+        {
+          "signal": "finanzas.pagos_a_tiempo",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.6
+        },
+        {
+          "signal": "finanzas.flujo_caja",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.4
+        }
+      ],
+      "Estancamiento": [
+        {
+          "signal": "personal.ausentismo",
+          "norm": [
+            0,
+            0.4
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "canales.dependencia_apps",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Ruptura de Fase": [
+        {
+          "signal": "canales.quejas",
+          "norm": [
+            0,
+            50
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "ventas.cancelaciones",
+          "norm": [
+            0,
+            0.3
+          ],
+          "peso": 0.5
+        }
+      ],
+      "Resonancia": [
+        {
+          "signal": "personal.satisfaccion",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        },
+        {
+          "signal": "canales.conversion_directa",
+          "norm": [
+            0,
+            1
+          ],
+          "peso": 0.5
+        }
+      ]
+    },
+    "demo_operacion": {
+      "cocina": {
+        "tickets_hora": 34,
+        "tiempo_prep": 18,
+        "merma": 0.07
+      },
+      "ventas": {
+        "ticket_promedio": 320,
+        "rotacion_mesas": 3.4,
+        "cancelaciones": 0.08
+      },
+      "finanzas": {
+        "pagos_a_tiempo": 0.86,
+        "flujo_caja": 0.68,
+        "costo_insumos": 0.42
+      },
+      "personal": {
+        "ausentismo": 0.12,
+        "rotacion_staff": 0.22,
+        "satisfaccion": 0.74
+      },
+      "canales": {
+        "dependencia_apps": 0.55,
+        "conversion_directa": 0.4,
+        "quejas": 9
+      }
+    }
   }
 }
