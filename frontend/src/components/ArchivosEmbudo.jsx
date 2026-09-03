@@ -188,7 +188,7 @@ export const ArchivosEmbudo = () => {
         {/* ── Flujo de KPIs: Cucurucho → 7 KPIs limpios → Lazo ── */}
         <section className="rounded-2xl p-6" style={panel} data-testid="flujo-panel">
           <h2 className="font-mono text-xs uppercase tracking-wider mb-4" style={{ color: C.brick }}>
-            Flujo de KPIs · Cucurucho → Lazo
+            Observación · Cucurucho → Métricas
           </h2>
           <div className="flex flex-wrap items-center gap-3 mb-2">
             <select
@@ -212,12 +212,13 @@ export const ArchivosEmbudo = () => {
               data-testid="ejecutar-flujo-btn"
             >
               {loadingFlujo ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
-              Preparar KPIs y ejecutar lazo
+              Preparar las métricas y ejecutar la observación
             </button>
           </div>
           <p className="text-xs" style={{ color: C.muted }}>
-            El embudo separa los 7 KPIs holográficos de los archivos de operación (o usa la
-            operación demo del palenque si no subes archivos) y entrega entrada limpia al lazo.
+            El cucurucho y sus agentes (elemento de claridad, universal) separan las métricas
+            de los datos tradicionales de la ingesta (o de la operación demo del palenque) y
+            entregan la observación con el elemento de habitabilidad: semáforo y trayectoria.
           </p>
 
           {flujo && (
@@ -233,19 +234,31 @@ export const ArchivosEmbudo = () => {
                 </span>
               </div>
 
-              {/* 7 KPIs holográficos (entrada limpia) */}
+              {/* Métricas: dato tradicional (discreto) ↔ contraparte geométrica */}
               <div>
                 <p className="text-[11px] font-mono uppercase tracking-wider mb-2" style={{ color: C.muted }}>
-                  7 KPIs holográficos (entrada limpia al lazo)
+                  Métricas · dato tradicional (discreto) ↔ contraparte geométrica
                 </p>
-                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                <div className="grid sm:grid-cols-2 gap-3">
                   {Object.entries(flujo.lazo.kpis).map(([nombre, ev]) => (
-                    <div key={nombre} className="flex items-center gap-2 rounded-lg px-3 py-2"
+                    <div key={nombre} className="rounded-lg px-3 py-3"
                       style={{ border: `1px solid ${C.border}` }} data-testid={`flujo-kpi-${nombre}`}>
-                      <span className="w-3.5 h-3.5 rounded-full shrink-0"
-                        style={{ background: SEMAFORO[ev.estado] || C.muted }} />
-                      <span className="text-sm flex-1 truncate" style={{ color: C.ink }}>{nombre}</span>
-                      <span className="font-mono text-sm" style={{ color: C.ink }}>{ev.valor.toFixed(2)}</span>
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="w-3.5 h-3.5 rounded-full shrink-0"
+                          style={{ background: SEMAFORO[ev.estado] || C.muted }} />
+                        <span className="text-sm flex-1 truncate font-medium" style={{ color: C.ink }}>{nombre}</span>
+                        <span className="font-mono text-sm" style={{ color: C.ink }}>{ev.valor.toFixed(2)}</span>
+                      </div>
+                      <div className="space-y-0.5" style={{ borderTop: `1px dashed ${C.border}`, paddingTop: 6 }}>
+                        {(flujo.metricas_discretas?.[nombre] || []).map((d, i) => (
+                          <div key={i} className="flex justify-between text-xs" style={{ color: C.muted }}>
+                            <span>{d.campo}</span>
+                            <span className="font-mono">
+                              {d.valor ?? '—'}{d.norm != null ? ` → ${d.norm}` : ''}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   ))}
                 </div>

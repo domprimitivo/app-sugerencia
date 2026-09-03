@@ -173,6 +173,25 @@ def preparar_kpis(senales: Dict[str, Dict[str, float]], params: dict) -> Dict[st
     return kpis
 
 
+def detalle_discreto(senales: Dict[str, Dict[str, float]], params: dict) -> Dict[str, list]:
+    """
+    Para cada métrica geométrica, sus datos tradicionales (discretos) que la
+    componen. Hace explícita la armonía dato discreto ↔ contraparte geométrica.
+    """
+    out: Dict[str, list] = {}
+    for kpi, terminos in params.get("kpi_map", {}).items():
+        discretos = []
+        for t in terminos:
+            cat, col = t["signal"].split(".", 1)
+            val = senales.get(cat, {}).get(col)
+            lo, hi = t.get("norm", [0.0, 1.0])
+            norm = None if val is None else round(_norm(float(val), lo, hi), 3)
+            discretos.append({"signal": t["signal"], "categoria": cat, "campo": col,
+                              "valor": val, "norm": norm, "peso": t.get("peso", 1.0)})
+        out[kpi] = discretos
+    return out
+
+
 def control_features(kpis: Dict[str, float], dominio: dict, overrides: dict) -> dict:
     """Features de control adicionales para el lazo (viabilidad, firmeza, coherencia)."""
     umb = dominio.get("umbrales_operativos", {})
@@ -209,6 +228,7 @@ def ejecutar_flujo(client_id: str, archivos: List[dict], modo: str = "ASESORIA")
 
     senales = extraer_senales(archivos, params)
     kpis = preparar_kpis(senales, params)                    # entrada LIMPIA para el lazo
+    discretos = detalle_discreto(senales, params)            # armonía discreto ↔ geométrico
     control = control_features(kpis, dominio, cliente.get("overrides", {}))
 
     resultado_lazo = lazo_asesoria(kpis, DOMINIO_CVD) if modo == "ASESORIA" \
@@ -223,7 +243,8 @@ def ejecutar_flujo(client_id: str, archivos: List[dict], modo: str = "ASESORIA")
                     "polos": dominio["grafo_meso"]["nombres_polos"]},
         "cucurucho": {"id": cucurucho["id_config"], "agentes": agentes_activos(cucurucho)},
         "senales_operacion": senales,
-        "kpis_holograficos": kpis,          # <-- lo que recibe el lazo
+        "kpis_holograficos": kpis,          # <-- lo que recibe la observación (métricas)
+        "metricas_discretas": discretos,    # <-- datos tradicionales por métrica
         "features_control": control,
         "lazo": resultado_lazo,
     }

@@ -52,8 +52,12 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
   cucurucho/cucurucho_base_v1.json. 6 dominios empresariales = únicos válidos; palenque
   (dom_fermentacion_lotes_v1) es SOLO demostración (es_demo).
 - Endpoints: `GET /api/flujo/dominios`, `GET /api/flujo/clientes`, `POST /api/flujo/ejecutar`.
-- Frontend: sección "Flujo de KPIs · Cucurucho → Lazo" en `/archivos` (selector de cliente,
-  botón ejecutar, muestra 7 KPIs semáforo + control + trayectoria). Testeado 100%.
+- Frontend: sección "Observación · Cucurucho → Métricas" en `/archivos` (selector de cliente,
+  botón "Preparar las métricas y ejecutar la observación", muestra cada métrica geométrica
+  (semáforo) EN ARMONÍA con sus datos tradicionales/discretos + control + trayectoria).
+  Lenguaje técnico: KPIs=nombre interno → "métricas"; lazo → "observación". Cucurucho+agentes
+  = elemento de claridad (universal); semáforo/trayectoria = elemento de habitabilidad
+  (variará más adelante). Backend expone `metricas_discretas` (dato discreto ↔ geométrico).
 
 ## Estilo / Paleta (2026-09-02)
 - Paleta arquitectónica (ladrillo/cielo/césped/arena) en `/claridad` y `/archivos`.
