@@ -40,8 +40,24 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
 
 ### Modo del lazo (hardcodeado)
 - Constante `MODO_LAZO = 'ASESORIA'` en `frontend/src/components/ArchivosEmbudo.jsx`.
-  Para otro repo/build cambiar a `'AGENCIA'` en esa línea (comentada). El activador no
-  lleva campo "modo", por eso se hardcodea en esta versión.
+  Para otro repo/build cambiar a `'AGENCIA'` en esa línea (comentada).
+
+### 4) Flujo de KPIs — Cucurucho → 7 KPIs → Lazo (2026-09-02)
+- `backend/flujo_kpis.py`: cliente→dominio→cucurucho. El embudo (AG3 limpiador +
+  AG5 ingeniero de features) SEPARA los 7 KPIs holográficos + features de control
+  (c_viabilidad, firmeza_suelo_R, delta_coherencia) desde archivos de operación
+  (cosecha, pagos, etc.) y entrega ENTRADA LIMPIA al lazo. Sin archivos → usa la
+  operación demo del palenque.
+- Config en `backend/flujo/`: clientes/, dominios/, params/ (parametrización palenque),
+  cucurucho/cucurucho_base_v1.json. 6 dominios empresariales = únicos válidos; palenque
+  (dom_fermentacion_lotes_v1) es SOLO demostración (es_demo).
+- Endpoints: `GET /api/flujo/dominios`, `GET /api/flujo/clientes`, `POST /api/flujo/ejecutar`.
+- Frontend: sección "Flujo de KPIs · Cucurucho → Lazo" en `/archivos` (selector de cliente,
+  botón ejecutar, muestra 7 KPIs semáforo + control + trayectoria). Testeado 100%.
+
+## Estilo / Paleta (2026-09-02)
+- Paleta arquitectónica (ladrillo/cielo/césped/arena) en `/claridad` y `/archivos`.
+- Marca de agua `Watermark.jsx` (acuarela clara de las dos épocas + cielo, degradada).
 
 ## Cambios de infraestructura (sin alterar comportamiento)
 - `backend/local_storage.py`: helper de persistencia local (disco), usado por las
@@ -54,7 +70,6 @@ intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca 
 - Tests: `backend/tests/test_lazo.py`, `backend/tests/test_compresion.py`.
 
 ## Backlog / Next
-- P2: Multi-dominio para el lazo (config desde cuestionario/cucurucho).
 - P2: Pantalla de configuración inicial en React (hoy el sistema no está "configurado",
   por eso el embudo RAG pide configuración). El flujo real vive en el exe Flutter.
 - P2: Descarga directa del paquete/archivos del sistema comprimido desde /archivos.

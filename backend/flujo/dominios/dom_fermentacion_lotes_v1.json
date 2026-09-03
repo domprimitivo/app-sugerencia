@@ -1,0 +1,25 @@
+{
+  "domain_id": "dom_fermentacion_lotes_v1",
+  "descriptor": "Sistemas de Fermentación y Bioprocesos por Lotes",
+  "es_demo": true,
+  "params_ref": "palenque_fermentacion_params",
+  "grafo_meso": {
+    "num_polos_core": 4,
+    "num_polos_variacion": 3,
+    "nombres_polos": [
+      "Permeabilidad", "Tensión TR", "Sutura", "Retorno al Suelo",
+      "Estancamiento", "Ruptura de Fase", "Resonancia"
+    ],
+    "matriz_adyacencia_base": [
+      [0.0, 0.8, 0.1, 0.0],
+      [0.2, 0.0, 0.7, 0.4],
+      [0.0, 0.3, 0.0, 0.9],
+      [0.1, 0.0, 0.2, 0.0]
+    ]
+  },
+  "umbrales_operativos": {
+    "c_viabilidad_critico": 1.070,
+    "firmeza_suelo_minima_R": 0.60,
+    "delta_max_coherencia": 0.12
+  }
+}

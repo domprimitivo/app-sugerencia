@@ -4,7 +4,7 @@ Aprendiz Mileforum - Backend FastAPI
 F-05 integrado: export_package, anomalias, schema_draft, destruccion.
 """
 
-from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File
+from fastapi import FastAPI, APIRouter, HTTPException, UploadFile, File, Form
 from starlette.middleware.cors import CORSMiddleware
 import os
 import sys
@@ -1736,6 +1736,46 @@ async def comprimir_sistema(dominio: str):
         "shape_report": paquete["shape_report"],
         "paquete": paquete,
     }
+
+
+# ─── Flujo de KPIs: Cucurucho → 7 KPIs holográficos → Lazo ───────────────────
+
+from flujo_kpis import (
+    listar_clientes as _listar_clientes,
+    listar_dominios as _listar_dominios,
+    ejecutar_flujo as _ejecutar_flujo,
+)
+
+
+@api_router.get("/flujo/dominios")
+async def flujo_dominios():
+    """6 dominios empresariales (únicos válidos) + demostración (palenque)."""
+    return _listar_dominios()
+
+
+@api_router.get("/flujo/clientes")
+async def flujo_clientes():
+    return _listar_clientes()
+
+
+@api_router.post("/flujo/ejecutar")
+async def flujo_ejecutar(
+    client_id: str = Form(...),
+    modo: str = Form("ASESORIA"),
+    files: List[UploadFile] = File(default=[]),
+):
+    """
+    Ejecuta el flujo completo. Si no se suben archivos, usa la operación demo
+    del palenque para mostrar el flujo. Devuelve la entrada LIMPIA (7 KPIs)
+    que recibe el lazo, más las features de control y el resultado del lazo.
+    """
+    leidos = [{"nombre": f.filename, "datos": await f.read()} for f in (files or [])]
+    try:
+        return _ejecutar_flujo(client_id, leidos, modo=modo)
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except PermissionError as e:
+        raise HTTPException(status_code=403, detail=str(e))
 
 
 # ─── Registro del router y arranque ─────────────────────────────────────────

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
@@ -17,6 +17,8 @@ const C = {
   grass: '#4E7A34', amber: '#E0A82E', red: '#C0392B',
   ink: '#3A2E28', muted: '#8A7A66',
 };
+
+const SEMAFORO = { VERDE: '#4E7A34', AMARILLO: '#E0A82E', ROJO: '#C0392B' };
 
 // ─────────────────────────────────────────────────────────────
 // MODO DEL LAZO — hardcodeado para esta versión (build/exe actual).
@@ -42,6 +44,34 @@ export const ArchivosEmbudo = () => {
   const [reconstruidos, setReconstruidos] = useState(null);
   const [embudoOut, setEmbudoOut] = useState(null);
   const [msg, setMsg] = useState(null);
+  const [clientes, setClientes] = useState([]);
+  const [clientId, setClientId] = useState('');
+  const [flujo, setFlujo] = useState(null);
+  const [loadingFlujo, setLoadingFlujo] = useState(false);
+
+  useEffect(() => {
+    axios.get(`${API}/flujo/clientes`).then((r) => {
+      setClientes(r.data);
+      if (r.data.length) setClientId(r.data[0].client_id);
+    }).catch(() => {});
+  }, []);
+
+  const ejecutarFlujo = async () => {
+    if (!clientId) { setMsg('Selecciona un cliente.'); return; }
+    setLoadingFlujo(true); setFlujo(null); setMsg(null);
+    try {
+      const fd = new FormData();
+      fd.append('client_id', clientId);
+      fd.append('modo', MODO_LAZO);
+      files.forEach((f) => fd.append('files', f));
+      const r = await axios.post(`${API}/flujo/ejecutar`, fd);
+      setFlujo(r.data);
+    } catch (e) {
+      setMsg('Flujo: ' + (e.response?.data?.detail || e.message));
+    } finally {
+      setLoadingFlujo(false);
+    }
+  };
 
   const onPick = (e) => {
     setFiles(Array.from(e.target.files || []));
@@ -155,6 +185,93 @@ export const ArchivosEmbudo = () => {
           {msg && <p className="mt-4 text-sm" style={{ color: C.ink }} data-testid="archivos-msg">{msg}</p>}
         </section>
 
+        {/* ── Flujo de KPIs: Cucurucho → 7 KPIs limpios → Lazo ── */}
+        <section className="rounded-2xl p-6" style={panel} data-testid="flujo-panel">
+          <h2 className="font-mono text-xs uppercase tracking-wider mb-4" style={{ color: C.brick }}>
+            Flujo de KPIs · Cucurucho → Lazo
+          </h2>
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            <select
+              value={clientId}
+              onChange={(e) => { setClientId(e.target.value); setFlujo(null); }}
+              className="rounded-full px-4 py-2 text-sm"
+              style={{ background: '#FFFFFF88', border: `1px solid ${C.border}`, color: C.ink }}
+              data-testid="flujo-cliente-select"
+            >
+              {clientes.map((c) => (
+                <option key={c.client_id} value={c.client_id}>
+                  {c.client_name} · {c.domain_ref}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={ejecutarFlujo}
+              disabled={loadingFlujo}
+              className="flex items-center gap-2 px-5 py-2 rounded-full font-semibold transition-transform active:scale-95 disabled:opacity-60"
+              style={{ background: C.sky, color: '#F4EEDF' }}
+              data-testid="ejecutar-flujo-btn"
+            >
+              {loadingFlujo ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Filter className="w-4 h-4" />}
+              Preparar KPIs y ejecutar lazo
+            </button>
+          </div>
+          <p className="text-xs" style={{ color: C.muted }}>
+            El embudo separa los 7 KPIs holográficos de los archivos de operación (o usa la
+            operación demo del palenque si no subes archivos) y entrega entrada limpia al lazo.
+          </p>
+
+          {flujo && (
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="mt-6 space-y-5" data-testid="flujo-resultado">
+              <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm">
+                <span style={{ color: C.ink }}><b>{flujo.cliente.client_name}</b></span>
+                <span style={{ color: C.muted }}>{flujo.dominio.descriptor}</span>
+                {flujo.dominio.es_demo && (
+                  <span className="text-xs px-2 py-0.5 rounded-full" style={{ background: C.amber, color: C.ink }}>DEMOSTRACIÓN</span>
+                )}
+                <span style={{ color: C.muted }} className="text-xs">
+                  preparan: {flujo.cucurucho.agentes.filter((a) => a.prepara_kpis).map((a) => a.id).join(', ')}
+                </span>
+              </div>
+
+              {/* 7 KPIs holográficos (entrada limpia) */}
+              <div>
+                <p className="text-[11px] font-mono uppercase tracking-wider mb-2" style={{ color: C.muted }}>
+                  7 KPIs holográficos (entrada limpia al lazo)
+                </p>
+                <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  {Object.entries(flujo.lazo.kpis).map(([nombre, ev]) => (
+                    <div key={nombre} className="flex items-center gap-2 rounded-lg px-3 py-2"
+                      style={{ border: `1px solid ${C.border}` }} data-testid={`flujo-kpi-${nombre}`}>
+                      <span className="w-3.5 h-3.5 rounded-full shrink-0"
+                        style={{ background: SEMAFORO[ev.estado] || C.muted }} />
+                      <span className="text-sm flex-1 truncate" style={{ color: C.ink }}>{nombre}</span>
+                      <span className="font-mono text-sm" style={{ color: C.ink }}>{ev.valor.toFixed(2)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Features de control */}
+              <div className="flex flex-wrap gap-2" data-testid="flujo-control">
+                <Flag ok={flujo.features_control.viable} label={`viabilidad ${flujo.features_control.c_viabilidad}`} />
+                <Flag ok={flujo.features_control.suelo_firme} label={`suelo R ${flujo.features_control.firmeza_suelo_R}`} />
+                <Flag ok={flujo.features_control.coherente} label={`Δ coherencia ${flujo.features_control.delta_coherencia}`} />
+              </div>
+
+              {/* Salida del lazo */}
+              <div className="rounded-xl px-5 py-4" style={{ background: flujo.lazo.requiere_cenit ? C.brick : '#FFFFFF66', border: `1px solid ${C.border}` }} data-testid="flujo-lazo">
+                <p className="text-[11px] font-mono uppercase tracking-wider mb-1"
+                  style={{ color: flujo.lazo.requiere_cenit ? '#F4EEDFbb' : C.muted }}>
+                  {flujo.lazo.requiere_cenit ? 'Cénit · Trayectoria' : 'Trayectoria · Estado ' + flujo.lazo.estado_general}
+                </p>
+                <p className="text-lg font-semibold" style={{ color: flujo.lazo.requiere_cenit ? '#F4EEDF' : C.ink }}>
+                  {flujo.lazo.geodesica_sugerida.nombre}
+                </p>
+              </div>
+            </motion.div>
+          )}
+        </section>
+
         {report && (
           <motion.section initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
             className="rounded-2xl p-6" style={panel} data-testid="shape-report">
@@ -231,6 +348,13 @@ const Metric = ({ label, value, color }) => (
     <p className="text-[11px] font-mono uppercase tracking-wider" style={{ color: '#8A7A66' }}>{label}</p>
     <p className="font-mono text-lg font-bold" style={{ color: color || '#3A2E28' }}>{value ?? '—'}</p>
   </div>
+);
+
+const Flag = ({ ok, label }) => (
+  <span className="text-xs px-3 py-1 rounded-full font-mono" data-testid="control-flag"
+    style={{ background: ok ? '#4E7A3422' : '#C0392B22', color: ok ? '#4E7A34' : '#C0392B', border: `1px solid ${ok ? '#4E7A34' : '#C0392B'}55` }}>
+    {ok ? '✓' : '✕'} {label}
+  </span>
 );
 
 export default ArchivosEmbudo;

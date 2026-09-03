@@ -1,0 +1,29 @@
+{
+  "params_id": "palenque_fermentacion_params",
+  "version": "1.0.0",
+  "descripcion": "Parametrización DEMOSTRATIVA (palenque de mezcal) para ver el flujo completo del cucurucho: archivos de operación → 7 KPIs holográficos. NO es un dominio empresarial válido; es solo explicación.",
+  "es_demo": true,
+  "categorias_operacion": {
+    "cosecha":      { "keywords": ["cosecha", "agave", "harvest"], "columnas_esperadas": ["kg_agave", "madurez_promedio", "merma"] },
+    "fermentacion": { "keywords": ["ferment", "lote", "batch"],   "columnas_esperadas": ["temp_prom", "temp_max", "ph_prom", "brix_caida", "lotes_ok", "lotes_fallidos", "dias_prom"] },
+    "pagos":        { "keywords": ["pago", "cobro", "finanz", "payment"], "columnas_esperadas": ["a_tiempo", "vencidos", "flujo_caja"] },
+    "destilacion":  { "keywords": ["destil", "distil"], "columnas_esperadas": ["rendimiento", "reprocesos"] },
+    "inventario":   { "keywords": ["inventar", "stock", "almacen"], "columnas_esperadas": ["rotacion", "estancado_dias"] }
+  },
+  "kpi_map": {
+    "Permeabilidad":    [ { "signal": "cosecha.kg_agave",           "norm": [0, 20000], "peso": 0.5 }, { "signal": "destilacion.rendimiento", "norm": [0, 1], "peso": 0.5 } ],
+    "Tensión TR":       [ { "signal": "fermentacion.temp_max",      "norm": [30, 45],   "peso": 0.7 }, { "signal": "pagos.vencidos",          "norm": [0, 1], "peso": 0.3 } ],
+    "Sutura":           [ { "signal": "fermentacion.lotes_fallidos","norm": [0, 10],    "peso": 0.6 }, { "signal": "destilacion.reprocesos",  "norm": [0, 0.3], "peso": 0.4 } ],
+    "Retorno al Suelo": [ { "signal": "pagos.a_tiempo",             "norm": [0, 1],     "peso": 0.6 }, { "signal": "pagos.flujo_caja",        "norm": [0, 1], "peso": 0.4 } ],
+    "Estancamiento":    [ { "signal": "inventario.estancado_dias",  "norm": [0, 30],    "peso": 0.6 }, { "signal": "fermentacion.dias_prom",  "norm": [3, 8], "peso": 0.4 } ],
+    "Ruptura de Fase":  [ { "signal": "fermentacion.lotes_fallidos","norm": [0, 10],    "peso": 0.5 }, { "signal": "fermentacion.temp_max",   "norm": [30, 45], "peso": 0.5 } ],
+    "Resonancia":       [ { "signal": "cosecha.madurez_promedio",   "norm": [0, 1],     "peso": 0.5 }, { "signal": "destilacion.rendimiento", "norm": [0, 1], "peso": 0.5 } ]
+  },
+  "demo_operacion": {
+    "cosecha":      { "kg_agave": 12000, "madurez_promedio": 0.82, "merma": 0.06 },
+    "fermentacion": { "temp_prom": 34.5, "temp_max": 39.0, "ph_prom": 4.1, "brix_caida": 0.72, "lotes_ok": 18, "lotes_fallidos": 3, "dias_prom": 5.4 },
+    "pagos":        { "a_tiempo": 0.88, "vencidos": 0.12, "flujo_caja": 0.70 },
+    "destilacion":  { "rendimiento": 0.68, "reprocesos": 0.09 },
+    "inventario":   { "rotacion": 0.60, "estancado_dias": 12 }
+  }
+}

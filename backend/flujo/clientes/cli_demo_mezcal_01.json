@@ -1,0 +1,7 @@
+{
+  "client_id": "cli_demo_mezcal_01",
+  "client_name": "Palenque Demostración S.A.",
+  "active_subscription": true,
+  "domain_ref": "dom_fermentacion_lotes_v1",
+  "overrides": { "c_viabilidad_critico": 1.068 }
+}
