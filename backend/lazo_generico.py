@@ -47,11 +47,11 @@ DOMINIO_CVD = DominioConfig(
     variables_controlables=["T_sub", "F_CH4", "F_H2", "P_tot"],
     variables_opacas=["nucleacion_propensity", "etch_strength"],
     geodesicas={
-        "gamma_0": {"nombre": "Mantener vector de estado nominal", "condicion": "Todos los KPIs en verde"},
-        "gamma_1": {"nombre": "Flexibilización: Ajustar flujo CH4/H2", "condicion": "Permeabilidad < 0.30"},
-        "gamma_2": {"nombre": "Amortiguación: Reducir carga operativa", "condicion": "Tensión TR > 0.55"},
-        "gamma_3": {"nombre": "Sincronización: Estabilizar T_sub", "condicion": "Ruptura de Fase > 0.40"},
-        "gamma_4": {"nombre": "Desacoplamiento: Revisar políticas", "condicion": "Autoengaño detectado"},
+        "gamma_0": {"nombre": "Mantener la operación en régimen nominal", "condicion": "Todos los indicadores en verde"},
+        "gamma_1": {"nombre": "Flexibilizar: ajustar el flujo insuficiente", "condicion": "Indicador de flujo por debajo del umbral"},
+        "gamma_2": {"nombre": "Amortiguar: reducir la sobrecarga", "condicion": "Indicador de carga por encima del umbral"},
+        "gamma_3": {"nombre": "Sincronizar: estabilizar el proceso", "condicion": "Proceso inestable (indicador de estabilidad fuera de rango)"},
+        "gamma_4": {"nombre": "Desacoplar: revisar las políticas", "condicion": "Patrón de autoengaño"},
     }
 )
 
@@ -63,10 +63,10 @@ DOMINIO_CVD = DominioConfig(
 # ──────────────────────────────────────────────────────────────
 _CONDICIONES = {
     "gamma_0": "Todos los indicadores en verde",
-    "gamma_1": "Permeabilidad baja (flujo insuficiente)",
-    "gamma_2": "Tensión alta (sobrecarga)",
-    "gamma_3": "Ruptura de fase (proceso inestable)",
-    "gamma_4": "Señal de autoengaño (rojo estructural con resonancia en verde)",
+    "gamma_1": "Indicador de flujo por debajo del umbral",
+    "gamma_2": "Indicador de carga por encima del umbral",
+    "gamma_3": "Proceso inestable (indicador de estabilidad fuera de rango)",
+    "gamma_4": "Patrón de autoengaño (indicadores estructurales en rojo con señal de control en verde)",
 }
 
 TRAYECTORIAS_POR_DOMINIO = {
@@ -336,17 +336,48 @@ def lazo_agencia(kpis: Dict[str, float], dominio: DominioConfig) -> Dict:
 # ──────────────────────────────────────────────────────────────
 # 5. SERIALIZACION DEL DOMINIO PARA LA PANTALLA DE CLARIDAD
 # ──────────────────────────────────────────────────────────────
+
+# Enmascaramiento de PI: los nombres reales de los KPIs y de las variables del
+# modelo viven SOLO como clave interna del backend. La API expone códigos
+# neutrales (K1..K7 para KPIs, C1..Cn / O1..On para variables de control/opacas).
+CODIGO_POR_KPI = {n: f"K{i + 1}" for i, n in enumerate(DOMINIO_CVD.kpis_nombres)}
+KPI_POR_CODIGO = {v: k for k, v in CODIGO_POR_KPI.items()}
+
+
+def desenmascarar_kpis(kpis_codificados: Dict[str, float]) -> Dict[str, float]:
+    """Traduce códigos (K1..K7) → nombres internos para el cálculo del lazo."""
+    return {KPI_POR_CODIGO.get(k, k): v for k, v in kpis_codificados.items()}
+
+
+def enmascarar_nombres(nombres: List[str]) -> List[str]:
+    """Lista de nombres reales de KPI → lista de códigos neutrales."""
+    return [CODIGO_POR_KPI.get(n, n) for n in nombres]
+
+
+def enmascarar_dict_por_kpi(d: Dict) -> Dict:
+    """Reemplaza las claves (nombres reales de KPI) por códigos neutrales."""
+    return {CODIGO_POR_KPI.get(k, k): v for k, v in (d or {}).items()}
+
+
+def enmascarar_resultado(resultado: Dict) -> Dict:
+    """Enmascara los nombres internos de KPI por códigos neutrales en la salida del lazo."""
+    r = dict(resultado)
+    if isinstance(r.get("kpis"), dict):
+        r["kpis"] = enmascarar_dict_por_kpi(r["kpis"])
+    return r
+
+
 def dominio_serializable(dominio: DominioConfig) -> Dict:
-    """Config del dominio lista para JSON (tuplas verde → listas)."""
+    """Config del dominio lista para JSON, con los nombres de PI enmascarados."""
     umbrales = {}
     for nombre, u in dominio.kpis_umbrales.items():
         verde = u.get("verde", (0.0, 1.0))
-        umbrales[nombre] = {"verde": [verde[0], verde[1]], "rojo": u.get("rojo", 0.5)}
+        umbrales[CODIGO_POR_KPI.get(nombre, nombre)] = {"verde": [verde[0], verde[1]], "rojo": u.get("rojo", 0.5)}
     return {
         "nombre": dominio.nombre,
-        "kpis_nombres": dominio.kpis_nombres,
+        "kpis_nombres": enmascarar_nombres(dominio.kpis_nombres),
         "kpis_umbrales": umbrales,
-        "variables_controlables": dominio.variables_controlables,
-        "variables_opacas": dominio.variables_opacas,
+        "variables_controlables": [f"C{i + 1}" for i in range(len(dominio.variables_controlables))],
+        "variables_opacas": [f"O{i + 1}" for i in range(len(dominio.variables_opacas))],
         "geodesicas": dominio.geodesicas,
     }

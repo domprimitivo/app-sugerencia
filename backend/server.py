@@ -1823,6 +1823,8 @@ from lazo_generico import (
     lazo_agencia,
     dominio_serializable,
     construir_dominio,
+    desenmascarar_kpis,
+    enmascarar_resultado,
 )
 
 
@@ -1887,12 +1889,13 @@ async def evaluar_lazo(input: LazoInput):
     """
     config = load_config()
     dominio = _dominio_activo_lazo()
+    kpis_reales = desenmascarar_kpis(input.kpis)
     if input.modo == "ASESORIA":
-        resultado = lazo_asesoria(input.kpis, dominio)
+        resultado = lazo_asesoria(kpis_reales, dominio)
     else:
-        resultado = lazo_agencia(input.kpis, dominio)
+        resultado = lazo_agencia(kpis_reales, dominio)
         resultado["ingesta_tiempo_real"] = _ingesta_tiempo_real(config.get("dominio_id"))
-    return resultado
+    return enmascarar_resultado(resultado)
 
 
 # ─── Compresión Geométrica (Códec MOCG, 100% local) ──────────────────────────

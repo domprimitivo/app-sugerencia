@@ -103,3 +103,21 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
   añade `ingesta_tiempo_real{disponible,total,items}`; frontend muestra
   `vinculo-lazo-control` (solo AGENCIA). Deps: openpyxl.
 - Validado 100% (iteración 10).
+## Añadido (sesión 6 · 2026-06) — Enmascaramiento de PI (P0)
+- **Objetivo:** los nombres reales de KPIs, variables del modelo y condiciones de
+  trayectoria son PI crítica; viven SOLO como clave interna en el backend. La API
+  expone códigos neutrales.
+- **lazo_generico.py:** mapa `CODIGO_POR_KPI` (K1..K7) + helpers
+  `desenmascarar_kpis`, `enmascarar_resultado`, `enmascarar_nombres`,
+  `enmascarar_dict_por_kpi`. `dominio_serializable` devuelve KPIs como K1..K7,
+  umbrales por código, `variables_controlables`→C1..Cn, `variables_opacas`→O1..On.
+  `_CONDICIONES` y `DOMINIO_CVD.geodesicas` reescritas sin nombres reales (adiós
+  "Permeabilidad", "Tensión TR", CH4/H2/T_sub, etc.).
+- **server.py `/api/lazo/evaluar`:** desenmascara entrada (K→real) para el cálculo,
+  enmascara la salida.
+- **flujo_kpis.py (`ejecutar_flujo` y `ejecutar_flujo_dominio`):** `polos`,
+  `kpis_holograficos`, `metricas_discretas` y `lazo` enmascarados (mismos códigos).
+- **PantallaClaridad.jsx:** presets nominal/autoengaño con claves K1..K7 (el UI ya
+  era 100% gráfico; sin texto de KPI). `ArchivosEmbudo.jsx` ahora muestra K1..K7.
+- Validado por curl (lazo/dominio, lazo/evaluar, flujo/ejecutar-dominio) + screenshot
+  de /claridad: sin fugas de nombres reales en el DOM ni en los payloads.

@@ -25,7 +25,10 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
-from lazo_generico import DOMINIO_CVD, lazo_asesoria, lazo_agencia
+from lazo_generico import (
+    DOMINIO_CVD, lazo_asesoria, lazo_agencia,
+    enmascarar_resultado, enmascarar_nombres, enmascarar_dict_por_kpi,
+)
 from compresion_geometrica import comprimir as _comprimir_codec
 
 BASE = Path(__file__).resolve().parent
@@ -419,16 +422,16 @@ def ejecutar_flujo_dominio(domain_id: str, archivos: List[dict], modo: str = "AS
         "cliente": {"client_id": domain_id, "client_name": dominio["descriptor"],
                     "active_subscription": True, "overrides": {}},
         "dominio": {"domain_id": domain_id, "descriptor": dominio["descriptor"],
-                    "es_demo": es_demo, "polos": POLOS_STD},
+                    "es_demo": es_demo, "polos": enmascarar_nombres(POLOS_STD)},
         "cucurucho": {"id": cucurucho["id_config"], "agentes": agentes_activos(cucurucho)},
         "senales_operacion": senales,
-        "kpis_holograficos": kpis,
-        "metricas_discretas": discretos,
+        "kpis_holograficos": enmascarar_dict_por_kpi(kpis),
+        "metricas_discretas": enmascarar_dict_por_kpi(discretos),
         "features_control": control,
         "calibracion": {"aplicada": calibrar, "rangos": calib},
         "memoria": memoria,
         "historial": listar_memoria(domain_id),
-        "lazo": resultado_lazo,
+        "lazo": enmascarar_resultado(resultado_lazo),
     }
 
 
@@ -456,11 +459,11 @@ def ejecutar_flujo(client_id: str, archivos: List[dict], modo: str = "ASESORIA")
                     "overrides": cliente.get("overrides", {})},
         "dominio": {"domain_id": dominio["domain_id"], "descriptor": dominio["descriptor"],
                     "es_demo": dominio.get("es_demo", False),
-                    "polos": dominio["grafo_meso"]["nombres_polos"]},
+                    "polos": enmascarar_nombres(dominio["grafo_meso"]["nombres_polos"])},
         "cucurucho": {"id": cucurucho["id_config"], "agentes": agentes_activos(cucurucho)},
         "senales_operacion": senales,
-        "kpis_holograficos": kpis,          # <-- lo que recibe la observación (métricas)
-        "metricas_discretas": discretos,    # <-- datos tradicionales por métrica
+        "kpis_holograficos": enmascarar_dict_por_kpi(kpis),          # <-- lo que recibe la observación (métricas)
+        "metricas_discretas": enmascarar_dict_por_kpi(discretos),    # <-- datos tradicionales por métrica
         "features_control": control,
-        "lazo": resultado_lazo,
+        "lazo": enmascarar_resultado(resultado_lazo),
     }

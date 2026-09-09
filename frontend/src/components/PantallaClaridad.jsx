@@ -24,14 +24,14 @@ const HERMANO_COLOR = {
 };
 
 const PRESET_NOMINAL = {
-  'Permeabilidad': 0.65, 'Tensión TR': 0.25, 'Sutura': 0.20,
-  'Retorno al Suelo': 0.75, 'Estancamiento': 0.15, 'Ruptura de Fase': 0.20,
-  'Resonancia': 0.25,
+  'K1': 0.65, 'K2': 0.25, 'K3': 0.20,
+  'K4': 0.75, 'K5': 0.15, 'K6': 0.20,
+  'K7': 0.25,
 };
 const PRESET_AUTOENGANO = {
-  'Permeabilidad': 0.55, 'Tensión TR': 0.60, 'Sutura': 0.65,
-  'Retorno al Suelo': 0.45, 'Estancamiento': 0.50, 'Ruptura de Fase': 0.55,
-  'Resonancia': 0.25,
+  'K1': 0.55, 'K2': 0.60, 'K3': 0.65,
+  'K4': 0.45, 'K5': 0.50, 'K6': 0.55,
+  'K7': 0.25,
 };
 
 export const PantallaClaridad = () => {
