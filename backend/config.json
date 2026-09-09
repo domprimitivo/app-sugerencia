@@ -3,5 +3,6 @@
   "tipo_dominio": "empresa",
   "dominio_id": "hotel",
   "dominio_nombre": "Hotel",
-  "configurado": true
+  "configurado": true,
+  "activado_en": "2026-09-09T15:37:04.108232+00:00"
 }

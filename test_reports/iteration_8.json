@@ -1,0 +1,21 @@
+{
+  "summary": "Validada la nueva adición 'Procesar con el embudo' en /claridad (ambos modos ASESORIA/AGENCIA) y su endpoint POST /api/embudo/registrar-resultado. Backend 2/2 pytest passed: registrar-resultado devuelve status='registrado', expediente_id y resultado.asistente.suggested_action_label; GET /api/expedientes lista el nuevo expediente 'Navegación ASESORIA ...' / 'Navegación AGENCIA ...' en estado 'completado' con dominio hotel. Frontend: en ASESORIA con preset-autoengano y evaluar aparecen estado-general-disc + kpis-semaforo y NO barra-hermanos; en AGENCIA con preset-nominal aparece adicionalmente barra-hermanos con hermano-corto/mediano/largo. En ambos modos procesar-embudo-nav-btn existe con texto exacto 'Procesar con el embudo' y tras click muestra 'Registrado' con check verde (~1-2s). Ningún nombre interno expuesto (aprendiz/modelo/RAG/backbone/cabezas ausentes en el botón).",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_embudo_navegacion.py",
+    "/app/test_reports/pytest/embudo_navegacion.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "PantallaClaridad.registrarEmbudo no resetea 'ok' si el usuario evalúa nuevo escenario tras registrar (useEffect en [resultado, modo] lo limpia, pero conviene comentarlo). Aceptable.",
+    "El endpoint /api/embudo/registrar-resultado invoca procesar_expediente que requiere activación (modo_lectura=false); la instalación 'hotel' ya está activada, pero si se distribuye a otro cliente sin activador el botón devolverá 403."
+  ],
+  "updated_files": ["/app/backend/tests/test_embudo_navegacion.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "2 expedientes 'Navegación ASESORIA/AGENCIA' creados en SQLite vía pytest.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Feature 'Procesar con el embudo' (botón en /claridad ambos modos + endpoint POST /api/embudo/registrar-resultado) validado end-to-end sobre dominio 'hotel'. data-testids: procesar-embudo-nav-btn, embudo-registro, embudo-registro-error, modo-toggle-asesoria/agencia, preset-nominal-btn/preset-autoengano-btn, evaluar-btn, estado-general-disc, kpis-semaforo, barra-hermanos, hermano-corto/mediano/largo, convocar-trayectoria-btn. Endpoint devuelve {status:'registrado', expediente_id, resultado:<ProcesamientoEmpresaResponse con asistente>}.",
+  "test_credentials": "None (no auth)"
+}

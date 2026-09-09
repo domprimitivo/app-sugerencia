@@ -1,0 +1,4 @@
+Navegación geométrica · modo ASESORIA
+Estado general: TENSION
+Trayectoria: Amortiguación: Reducir carga operativa — Tensión TR > 0.55
+KPIs: Permeabilidad=VERDE, Tensión TR=ROJO, Sutura=AMARILLO, Retorno al Suelo=ROJO, Estancamiento=AMARILLO, Ruptura de Fase=AMARILLO, Resonancia=VERDE

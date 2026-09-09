@@ -1,0 +1,4 @@
+Navegación geométrica · modo ASESORIA
+Estado general: NOMINAL
+Trayectoria: Mantener vector de estado nominal — Todos los KPIs en verde
+KPIs: Permeabilidad=VERDE, Tensión TR=VERDE, Sutura=VERDE, Retorno al Suelo=VERDE, Estancamiento=VERDE, Ruptura de Fase=VERDE, Resonancia=VERDE

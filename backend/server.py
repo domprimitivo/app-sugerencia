@@ -808,6 +808,64 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
         resultado["asistente"] = asistente
         return ProcesamientoEmpresaResponse(**resultado)
 
+
+class RegistrarResultadoRequest(BaseModel):
+    modo: str = "ASESORIA"
+    kpis: Dict[str, float] = {}
+    resultado: Dict[str, Any] = {}
+    origen: str = "navegacion"
+
+
+@api_router.post("/embudo/registrar-resultado")
+async def registrar_resultado_embudo(input: RegistrarResultadoRequest):
+    """
+    Procesa los resultados de la navegación geométrica (modo sugerencia/ASESORIA
+    o agencia/AGENCIA) a través del embudo, para que queden registrados en el
+    mismo lugar que el resto de la operación (expedientes/procesamientos + el
+    registro del asistente).
+    """
+    config = load_config()
+    if not config.get("configurado"):
+        raise HTTPException(status_code=400, detail="Sistema no configurado.")
+
+    r = input.resultado or {}
+    lines = [f"Navegación geométrica · modo {input.modo}"]
+    if r.get("estado_general"):
+        lines.append(f"Estado general: {r['estado_general']}")
+    geo = r.get("geodesica_sugerida") or {}
+    if geo:
+        lines.append(f"Trayectoria: {geo.get('nombre', '')} — {geo.get('condicion', '')}")
+    if r.get("kpis"):
+        kp = ", ".join(f"{n}={(ev or {}).get('estado', '')}" for n, ev in r["kpis"].items())
+        lines.append("KPIs: " + kp)
+    if input.modo == "AGENCIA":
+        def h(k):
+            return (r.get(k) or {}).get("estado", "")
+        lines.append(f"Piloto automático — Corto:{h('hermano_corto')} Mediano:{h('hermano_mediano')} Largo:{h('hermano_largo')}")
+    texto = "\n".join(lines)
+
+    exp = Expediente(
+        nombre=f"Navegación {input.modo} {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M')}",
+        descripcion=f"Resultados de navegación ({input.origen})",
+        dominio_id=config["dominio_id"])
+    db_execute(
+        "INSERT INTO expedientes (id, nombre, descripcion, dominio_id, estado, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        (exp.id, exp.nombre, exp.descripcion, exp.dominio_id, exp.estado,
+         exp.created_at.isoformat(), exp.updated_at.isoformat()))
+
+    exp_dir = UPLOADS_DIR / exp.id
+    exp_dir.mkdir(exist_ok=True)
+    fp = exp_dir / "navegacion.txt"
+    fp.write_text(texto, encoding="utf-8")
+    doc = DocumentoMetadata(expediente_id=exp.id, nombre="navegacion.txt",
+                            tipo="text/plain", size=fp.stat().st_size)
+    db_execute(
+        "INSERT INTO documentos (id, expediente_id, nombre, tipo, size, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
+        (doc.id, doc.expediente_id, doc.nombre, doc.tipo, doc.size, doc.uploaded_at.isoformat()))
+
+    resp = await procesar_expediente(exp.id, ProcesamientoRequest(tipo_consulta="navegacion"))
+    return {"status": "registrado", "expediente_id": exp.id, "resultado": resp}
+
 @api_router.post("/sincronizaciones/{expediente_id}/decision", response_model=Decision)
 async def registrar_decision(expediente_id: str, input: DecisionCreate):
     expediente = db_query_one("SELECT id FROM expedientes WHERE id = ?", (expediente_id,))

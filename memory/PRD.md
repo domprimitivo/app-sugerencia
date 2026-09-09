@@ -63,3 +63,20 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
   bundle real del repo). Validado con `abogado`: 5 decisiones → ajuste ejecutó el
   notebook y reemplazó el modelo.
 - Nota: `DecisionCreate` exige `expediente_id` también en el body.
+
+## Añadido (sesión 3 · 2026-06) — Sistema de navegación geométrica
+- **Modelo mental del repo:** dos elementos de navegación geométrica —
+  **claridad** (ya fusionado para empresas) y **habitabilidad** (medicina /
+  ciberseguridad, pendiente). Cada uno opera en **modo sugerencia (ASESORIA)** o
+  **modo agencia (AGENCIA)** según el cliente. Frontend: semáforo de KPIs (dots),
+  **barra de tres hermanos = "piloto automático"** (sólo AGENCIA), y geodésicas
+  = **"trayectorias"**. `/claridad` = PantallaClaridad; motor: `lazo_generico.py`
+  (lazo_asesoria / lazo_agencia).
+- **Primera adición (hecha):** botón **"Procesar con el embudo"** en `/claridad`
+  para AMBOS modos → `POST /api/embudo/registrar-resultado` crea expediente +
+  documento `navegacion.txt` y lo pasa por el embudo (procesar_expediente), para
+  que quede registrado en el mismo lugar que el resto de la operación
+  (expedientes/procesamientos + sugerencia del asistente). Validado 100%.
+- Pendiente Fase 2 **Habitabilidad**: construir el elemento de navegación para
+  dominios medicina/ciberseguridad (mismo esquema: semáforo + tres hermanos +
+  trayectorias + modos sugerencia/agencia).

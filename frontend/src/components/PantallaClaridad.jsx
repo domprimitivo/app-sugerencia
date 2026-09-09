@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Compass } from 'lucide-react';
+import { ArrowLeft, Compass, Import, Check } from 'lucide-react';
 import { Watermark } from './Watermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -41,12 +41,14 @@ export const PantallaClaridad = () => {
   const [resultado, setResultado] = useState(null);
   const [loading, setLoading] = useState(false);
   const [convocada, setConvocada] = useState(false); // trayectoria convocada por el usuario
+  const [registrando, setRegistrando] = useState(false);
+  const [registroMsg, setRegistroMsg] = useState(null);
 
   useEffect(() => {
     axios.get(`${API}/lazo/dominio`).then((r) => setDominio(r.data)).catch(() => {});
   }, []);
 
-  useEffect(() => { setConvocada(false); }, [resultado, modo]);
+  useEffect(() => { setConvocada(false); setRegistroMsg(null); }, [resultado, modo]);
 
   const setKpi = (nombre, valor) => setKpis((p) => ({ ...p, [nombre]: valor }));
 
@@ -59,6 +61,19 @@ export const PantallaClaridad = () => {
       /* silencio: interfaz gráfica */
     } finally {
       setLoading(false);
+    }
+  };
+
+  const registrarEmbudo = async () => {
+    if (!resultado) return;
+    setRegistrando(true); setRegistroMsg(null);
+    try {
+      await axios.post(`${API}/embudo/registrar-resultado`, { modo, kpis, resultado });
+      setRegistroMsg('ok');
+    } catch (e) {
+      setRegistroMsg('error');
+    } finally {
+      setRegistrando(false);
     }
   };
 
@@ -238,6 +253,26 @@ export const PantallaClaridad = () => {
                     </motion.div>
                   )}
                 </AnimatePresence>
+              </div>
+
+              {/* Procesar resultados con el embudo (ambos modos) */}
+              <div className="flex flex-col items-center gap-2 pt-2" data-testid="embudo-registro">
+                <button
+                  onClick={registrarEmbudo}
+                  disabled={registrando}
+                  className="flex items-center gap-2 rounded-full px-5 py-2 text-sm font-semibold transition-transform active:scale-95 disabled:opacity-60"
+                  style={{ border: `1.5px solid ${C.sky}`, color: C.sky, background: '#FFFFFF88' }}
+                  data-testid="procesar-embudo-nav-btn"
+                >
+                  {registroMsg === 'ok'
+                    ? <><Check className="w-4 h-4" style={{ color: C.grass }} /> Registrado</>
+                    : <><Import className="w-4 h-4" /> {registrando ? 'Procesando…' : 'Procesar con el embudo'}</>}
+                </button>
+                {registroMsg === 'error' && (
+                  <span className="text-xs" style={{ color: C.red }} data-testid="embudo-registro-error">
+                    No se pudo registrar
+                  </span>
+                )}
               </div>
             </motion.div>
           )}
