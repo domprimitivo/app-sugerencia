@@ -141,3 +141,14 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
     (MODELOS_DIR) ahora usan `Path(sys.executable).parent` cuando `sys.frozen`,
     para que catálogos/memoria/modelos vivan junto al .exe (no en _MEIPASS).
   - Nota: los .bat son para el build en Windows (no ejecutables en este contenedor).
+## Auditoría (sesión 7 · 2026-06) — Semáforo / Lazo / Aprendiz (4 etapas)
+- Verificación tipo "contratos+regresión+persistencia+arranque" adaptada a este
+  stack (sqlite3, `/api`, `.pt`). Resultado: backend sano, sin regresiones.
+- 56 rutas registradas; smoke tests OK: `/api/lazo/evaluar` (ASESORIA/AGENCIA,
+  K1..K7 enmascarados), `/api/aprendiz/{dom}/decision-asistente`
+  (confirmar+corregir → learning_event), `/decisiones`, `/ajuste/estado`,
+  `/motor/estado`, `/embudo/registrar-resultado`.
+- Contrato clave: `decision-asistente` requiere el objeto `sugerencia` COMPLETO
+  (dominio, node_id, phase, phase_probs, clarity, R_score, suggested_action_id/
+  label, soft_tags) — el frontend debe reenviar la sugerencia tal cual la recibió
+  de `/procesar`; si faltan campos → 500 (KeyError en construir_evento). No es bug.

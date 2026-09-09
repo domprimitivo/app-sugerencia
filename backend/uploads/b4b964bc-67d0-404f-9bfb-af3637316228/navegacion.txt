@@ -1,0 +1,4 @@
+Navegación geométrica · modo ASESORIA
+Estado general: NOMINAL
+Trayectoria: Mantener la línea en régimen nominal — Todos los indicadores en verde
+KPIs: K1=VERDE, K2=VERDE
