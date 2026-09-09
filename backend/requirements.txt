@@ -31,3 +31,4 @@ nbformat
 ipykernel
 pdfplumber
 python-docx
+openpyxl

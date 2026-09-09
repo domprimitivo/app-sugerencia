@@ -56,6 +56,107 @@ DOMINIO_CVD = DominioConfig(
 )
 
 
+# ──────────────────────────────────────────────────────────────
+# 1b. TRAYECTORIAS (GEODESICAS) POR DOMINIO
+# El semáforo (KPIs y umbrales) es IGUAL para todos; sólo cambia el
+# lenguaje natural de las trayectorias para que sean claras en cada dominio.
+# ──────────────────────────────────────────────────────────────
+_CONDICIONES = {
+    "gamma_0": "Todos los indicadores en verde",
+    "gamma_1": "Permeabilidad baja (flujo insuficiente)",
+    "gamma_2": "Tensión alta (sobrecarga)",
+    "gamma_3": "Ruptura de fase (proceso inestable)",
+    "gamma_4": "Señal de autoengaño (rojo estructural con resonancia en verde)",
+}
+
+TRAYECTORIAS_POR_DOMINIO = {
+    "fabrica": {
+        "gamma_0": "Mantener la línea en régimen nominal",
+        "gamma_1": "Flexibilizar: reajustar el ritmo de producción",
+        "gamma_2": "Amortiguar: aliviar carga en el cuello de botella",
+        "gamma_3": "Sincronizar: estabilizar turno y mantenimiento",
+        "gamma_4": "Desacoplar: revisar políticas de planta",
+    },
+    "logistica": {
+        "gamma_0": "Mantener rutas y flota en operación nominal",
+        "gamma_1": "Flexibilizar: reasignar rutas y capacidad",
+        "gamma_2": "Amortiguar: reducir carga en el tramo saturado",
+        "gamma_3": "Sincronizar: reprogramar entregas y relevos",
+        "gamma_4": "Desacoplar: revisar SLA y prioridades",
+    },
+    "retail": {
+        "gamma_0": "Mantener inventario y piso de venta estables",
+        "gamma_1": "Flexibilizar: reponer y ajustar surtido",
+        "gamma_2": "Amortiguar: descongestionar caja y atención",
+        "gamma_3": "Sincronizar: alinear stock con demanda",
+        "gamma_4": "Desacoplar: revisar promociones y precios",
+    },
+    "hotel": {
+        "gamma_0": "Mantener ocupación y servicio en nivel nominal",
+        "gamma_1": "Flexibilizar: reasignar habitaciones y personal",
+        "gamma_2": "Amortiguar: reforzar recepción en hora pico",
+        "gamma_3": "Sincronizar: coordinar limpieza y check-in",
+        "gamma_4": "Desacoplar: revisar overbooking y tarifas",
+    },
+    "restaurante": {
+        "gamma_0": "Mantener cocina y salón en ritmo nominal",
+        "gamma_1": "Flexibilizar: ajustar mise en place y turnos",
+        "gamma_2": "Amortiguar: aliviar la cocina en hora pico",
+        "gamma_3": "Sincronizar: acompasar sala y pases de cocina",
+        "gamma_4": "Desacoplar: revisar carta y mermas",
+    },
+    "clinica": {
+        "gamma_0": "Mantener flujo de pacientes estable",
+        "gamma_1": "Flexibilizar: reprogramar agenda y salas",
+        "gamma_2": "Amortiguar: reforzar triaje en saturación",
+        "gamma_3": "Sincronizar: coordinar turnos y camas",
+        "gamma_4": "Desacoplar: revisar protocolos de derivación",
+    },
+    "medicina": {
+        "gamma_0": "Mantener el plan de tratamiento vigente",
+        "gamma_1": "Flexibilizar: ajustar dosis o seguimiento",
+        "gamma_2": "Amortiguar: contener el signo de alarma",
+        "gamma_3": "Sincronizar: reordenar estudios y control",
+        "gamma_4": "Desacoplar: revisar diagnóstico diferencial",
+    },
+    "ciberseguridad": {
+        "gamma_0": "Mantener la postura de seguridad nominal",
+        "gamma_1": "Flexibilizar: reforzar el control debilitado",
+        "gamma_2": "Amortiguar: contener el incidente activo",
+        "gamma_3": "Sincronizar: aislar y estabilizar el segmento",
+        "gamma_4": "Desacoplar: revisar políticas y accesos",
+    },
+}
+
+_TRAYECTORIAS_GENERICAS = {
+    "gamma_0": "Mantener la operación en régimen nominal",
+    "gamma_1": "Flexibilizar: ajustar el flujo insuficiente",
+    "gamma_2": "Amortiguar: reducir la sobrecarga",
+    "gamma_3": "Sincronizar: estabilizar el proceso",
+    "gamma_4": "Desacoplar: revisar las políticas",
+}
+
+
+def construir_dominio(dominio_id: str, dominio_nombre: str = None) -> "DominioConfig":
+    """
+    Devuelve un DominioConfig con el MISMO semáforo (KPIs/umbrales) que la base,
+    pero con las trayectorias (geodésicas) en el lenguaje del dominio activo.
+    """
+    nombres = TRAYECTORIAS_POR_DOMINIO.get(dominio_id, _TRAYECTORIAS_GENERICAS)
+    geodesicas = {
+        k: {"nombre": nombres.get(k, _TRAYECTORIAS_GENERICAS[k]), "condicion": _CONDICIONES[k]}
+        for k in _CONDICIONES
+    }
+    return DominioConfig(
+        nombre=dominio_nombre or DOMINIO_CVD.nombre,
+        kpis_nombres=DOMINIO_CVD.kpis_nombres,
+        kpis_umbrales=DOMINIO_CVD.kpis_umbrales,
+        variables_controlables=DOMINIO_CVD.variables_controlables,
+        variables_opacas=DOMINIO_CVD.variables_opacas,
+        geodesicas=geodesicas,
+    )
+
+
 def _varianza(valores: List[float]) -> float:
     """Varianza poblacional (soberana, sin numpy)."""
     n = len(valores)

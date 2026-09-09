@@ -1,0 +1,22 @@
+{
+  "summary": "Iteration 10 tests all four new requirements. Backend (5/5 pytest): (1) GET /api/lazo/dominio returns fabrica-language geodésicas ('Mantener la línea en régimen nominal', 'Amortiguar: aliviar carga en el cuello de botella', etc.) with the SAME 7-KPI semáforo (Permeabilidad, Tensión TR, Sutura, Retorno al Suelo, Estancamiento, Ruptura de Fase, Resonancia) and umbrales. (2) POST /api/lazo/evaluar ASESORIA returns geodesica in fabrica language and does NOT include ingesta_tiempo_real; AGENCIA returns fabrica-language geodesica AND ingesta_tiempo_real{disponible,total,items}. (3) CSV + XLSX ingestion: creating an .xlsx via openpyxl and a .csv, uploading them via /api/expedientes/{id}/documentos and processing via /procesar returns both filenames in documentos_procesados with no '[Archivo binario]' fallback and includes suggested_action_label/accion_sugerida from the asistente. (4) Real-time ingestion is OPTIONAL: before the webhook, AGENCIA returned disponible=false with no error (200); after POST /api/ingesta/webhook/fabrica {fuente:'sensor', texto:'vibracion alta prensa 4'} (estado='completado'), a fresh AGENCIA evaluation returns disponible=true and total>=1 — vínculo al lazo de control confirmed. Frontend /claridad: AGENCIA path shows vinculo-lazo-control ('Lazo de control · tiempo real: 2 evento(s)') and trayectoria-nombre in fabrica language ('Mantener la línea en régimen nominal'); ASESORIA path correctly hides vinculo-lazo-control; procesar-embudo-nav-btn is present and clickable in both modes.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_iter10_dominio_ingesta.py",
+    "/app/test_reports/pytest/iter10.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is > 2000 lines; splitting into routers (lazo, ingesta, expedientes, activacion, aprendiz) would improve maintainability.",
+    "extraer_texto_documento still imports pdfplumber/docx/openpyxl lazily inside the function; a single module-top import (guarded) would surface missing deps earlier and speed up first request.",
+    "Broad `except Exception: return '[Archivo binario: nombre]'` silently masks extraction errors — consider logging the actual exception for observability."
+  ],
+  "updated_files": ["/app/backend/tests/test_iter10_dominio_ingesta.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "N/A (no auth; dominio activo 'fabrica' preconfigurado).",
+  "seed_data_creation": "Test expediente prefijado 'TEST_ingesta_csv_xlsx' se crea y elimina en fixture; webhook 'sensor'/'vibracion alta prensa 4' queda registrado en ingesta_webhook (útil para siguientes iteraciones).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Todos los cuatro nuevos requisitos verificados. TRAYECTORIAS_POR_DOMINIO en lazo_generico.py + construir_dominio() aplican al dominio activo sin tocar el semáforo. _ingesta_tiempo_real() devuelve disponible=false sin error si no hay eventos. AGENCIA en frontend muestra vinculo-lazo-control, ASESORIA no. CSV/XLSX se extraen correctamente vía openpyxl y csv stdlib."
+}

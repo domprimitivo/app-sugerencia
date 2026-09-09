@@ -753,6 +753,25 @@ def extraer_texto_documento(file_path: Path, tipo: str, nombre: str) -> str:
                     partes.append(" | ".join(c.text for c in row.cells))
             texto = "\n".join(partes).strip()
             return texto or f"[DOCX vacío: {nombre}]"
+        if ext in (".xlsx", ".xlsm") or "spreadsheet" in tipo or "excel" in tipo:
+            import openpyxl
+            wb = openpyxl.load_workbook(str(file_path), read_only=True, data_only=True)
+            partes = []
+            for ws in wb.worksheets:
+                partes.append(f"# Hoja: {ws.title}")
+                for row in ws.iter_rows(values_only=True):
+                    celdas = [str(c) for c in row if c is not None]
+                    if celdas:
+                        partes.append(" | ".join(celdas))
+            wb.close()
+            texto = "\n".join(partes).strip()
+            return texto or f"[Excel vacío: {nombre}]"
+        if ext == ".csv" or "csv" in tipo:
+            import csv as _csv
+            with open(file_path, 'r', encoding='utf-8', errors='ignore', newline='') as f:
+                filas = [" | ".join(fila) for fila in _csv.reader(f)]
+            texto = "\n".join(filas).strip()
+            return texto or f"[CSV vacío: {nombre}]"
         with open(file_path, 'r', encoding='utf-8') as f:
             return f.read()
     except Exception:
@@ -1803,6 +1822,7 @@ from lazo_generico import (
     lazo_asesoria,
     lazo_agencia,
     dominio_serializable,
+    construir_dominio,
 )
 
 
@@ -1811,24 +1831,68 @@ class LazoInput(BaseModel):
     kpis: Dict[str, float]
 
 
+def _dominio_activo_lazo():
+    """DominioConfig del dominio activo (semáforo base + trayectorias del dominio)."""
+    config = load_config()
+    if config.get("configurado"):
+        return construir_dominio(config.get("dominio_id"), config.get("dominio_nombre"))
+    return DOMINIO_CVD
+
+
+def _ingesta_tiempo_real(dominio_id: str, limite: int = 5) -> Dict[str, Any]:
+    """
+    Vinculación opcional del lazo con la ingesta en tiempo real (webhook/API).
+    Si no hay ingesta reciente NO da error: devuelve disponible=False.
+    """
+    if not dominio_id:
+        return {"disponible": False, "items": [], "total": 0}
+    try:
+        rows = db_query(
+            """SELECT fuente, estado, received_at, resultado_json
+               FROM ingesta_webhook WHERE dominio = ? ORDER BY received_at DESC LIMIT ?""",
+            (dominio_id, limite))
+    except Exception:
+        return {"disponible": False, "items": [], "total": 0}
+    items = []
+    for r in rows:
+        d = row_to_dict(r)
+        accion = None
+        try:
+            if d.get("resultado_json"):
+                accion = (json.loads(d["resultado_json"]) or {}).get("accion_sugerida")
+        except Exception:
+            accion = None
+        items.append({"fuente": d.get("fuente"), "estado": d.get("estado"),
+                      "received_at": d.get("received_at"), "accion_sugerida": accion})
+    total = db_query_one("SELECT COUNT(*) c FROM ingesta_webhook WHERE dominio = ?", (dominio_id,))
+    return {"disponible": len(items) > 0, "items": items, "total": total["c"] if total else 0}
+
+
 @api_router.get("/lazo/dominio")
 async def get_lazo_dominio():
     """
-    Config del dominio activo (KPIs, umbrales y geodesicas) para que la
-    Pantalla de Claridad renderice las entradas del lazo.
+    Config del dominio activo (KPIs, umbrales y trayectorias del dominio) para
+    que la Pantalla de Claridad renderice las entradas del lazo.
     """
-    return dominio_serializable(DOMINIO_CVD)
+    return dominio_serializable(_dominio_activo_lazo())
 
 
 @api_router.post("/lazo/evaluar")
 async def evaluar_lazo(input: LazoInput):
     """
-    Ejecuta el lazo generico y devuelve exactamente lo que la Pantalla de
-    Claridad debe mostrar. Reemplaza el antiguo reporte de claridad.
+    Ejecuta el lazo generico y devuelve lo que la Pantalla de Claridad muestra.
+    Las trayectorias siguen el dominio activo; el semáforo es igual para todos.
+    En AGENCIA se vincula al lazo de control con la ingesta en tiempo real
+    (opcional; si no hay, no da error).
     """
+    config = load_config()
+    dominio = _dominio_activo_lazo()
     if input.modo == "ASESORIA":
-        return lazo_asesoria(input.kpis, DOMINIO_CVD)
-    return lazo_agencia(input.kpis, DOMINIO_CVD)
+        resultado = lazo_asesoria(input.kpis, dominio)
+    else:
+        resultado = lazo_agencia(input.kpis, dominio)
+        resultado["ingesta_tiempo_real"] = _ingesta_tiempo_real(config.get("dominio_id"))
+    return resultado
 
 
 # ─── Compresión Geométrica (Códec MOCG, 100% local) ──────────────────────────

@@ -88,5 +88,18 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
 - **Pendiente (fuera de alcance del fix, notado):**
   - Trayectorias en lenguaje del dominio activo (hoy `lazo_generico.py` usa un
     dominio fijo CVD Grafeno, no fábrica/medicina/ciberseguridad).
-  - Modelo explícito de los **tres niveles** de registro: técnico (habitabilidad),
-    dominio (cadena de valor / soporte) y personal.
+## Añadido (sesión 5 · 2026-06) — Trayectorias por dominio + ingesta ampliada
+- **Trayectorias siguen el dominio activo** (`lazo_generico.py`:
+  `TRAYECTORIAS_POR_DOMINIO` + `construir_dominio()`): las geodésicas se muestran
+  en el lenguaje del dominio (fábrica, logística, retail, hotel, restaurante,
+  clínica, medicina, ciberseguridad + genérico). **El semáforo (7 KPIs y
+  umbrales) es IGUAL para todos.** `/api/lazo/dominio` y `/api/lazo/evaluar` usan
+  el dominio activo (`_dominio_activo_lazo`).
+- **Ingesta CSV + Excel** en `extraer_texto_documento` (openpyxl para .xlsx/.xlsm,
+  csv stdlib para .csv), además de PDF/DOCX/txt.
+- **Ingesta tiempo real (webhook/API) OPCIONAL:** `_ingesta_tiempo_real()`; si no
+  hay eventos → `disponible:false` sin error; el embudo procesa lo que haya.
+- **Modo AGENCIA vinculado al lazo de control:** `/api/lazo/evaluar` en AGENCIA
+  añade `ingesta_tiempo_real{disponible,total,items}`; frontend muestra
+  `vinculo-lazo-control` (solo AGENCIA). Deps: openpyxl.
+- Validado 100% (iteración 10).

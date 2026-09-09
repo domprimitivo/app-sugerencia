@@ -208,6 +208,18 @@ export const PantallaClaridad = () => {
                 </div>
               )}
 
+              {/* Vínculo al lazo de control: ingesta en tiempo real (solo AGENCIA, opcional) */}
+              {modo === 'AGENCIA' && resultado.ingesta_tiempo_real && (
+                <div className="flex justify-center" data-testid="vinculo-lazo-control">
+                  <span className="text-[11px] font-mono uppercase tracking-wider"
+                    style={{ color: resultado.ingesta_tiempo_real.disponible ? C.grass : C.muted }}>
+                    {resultado.ingesta_tiempo_real.disponible
+                      ? `Lazo de control · tiempo real: ${resultado.ingesta_tiempo_real.total} evento(s)`
+                      : 'Lazo de control · sin ingesta en tiempo real'}
+                  </span>
+                </div>
+              )}
+
               {/* Trayectoria — ÚNICO texto. Convocada por el usuario, o auto si CÉNIT */}
               <div className="flex flex-col items-center pt-2" data-testid="trayectoria">
                 <AnimatePresence mode="wait">
