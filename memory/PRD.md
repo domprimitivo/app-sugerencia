@@ -1,104 +1,50 @@
-# Mileforum — App Local Soberana (PRD)
+# Aprendiz Mileforum — PRD
 
-## Regla soberana (invariante)
-App 100% local: FastAPI + SQLite, sin MongoDB, sin dependencias/referencias a terceros,
-sin build/deploy en ninguna plataforma. Cambios puntuales; no reconstruir; mantener
-intacto el resto de funciones. Almacenamiento de archivos en disco local (nunca nube).
+## Problema / Origen
+Refinamiento del repo `domprimitivo/app-sugerencia` (copiado íntegro a /app).
+App 100% LOCAL y OFFLINE: React + FastAPI + **SQLite** (sin MongoDB, sin
+dependencia de internet ni terceros). Objetivo del cliente: distribuible como
+.exe local.
 
-## Implementado
+## Arquitectura / Flujos (identificados)
+- **Embudo (ingesta):** entradas manuales (`/api/expedientes/{id}/procesar`) y
+  webhook tiempo real (`/api/ingesta/webhook/{dominio}`). Se bifurca por
+  `tipo_dominio` en config.json:
+  - **unipersonal** → motor APRENDIZ (`aprendiz_motor/notebook_engine.py`,
+    BundleLoader GRU/geométrico) → heads(trigo/cobre/petroleo), estados,
+    sugerencia_tcl.
+  - **empresa** → agentes RAG (`aprendiz_motor/rag_agents/processor.py` + cucurucho JSON).
+- Frontend app: landing + `/claridad` (lazo) + `/archivos` (embudo empresa:
+  archivos + escritura libre + compresión geométrica).
 
-### 1) Pantalla de Claridad — Lazo genérico (2026-09-02)
-- `backend/lazo_generico.py`: puerto fiel del notebook (evaluar_kpis, detectar_autoengano,
-  sugerir_geodesica, lazo_asesoria, lazo_agencia). Endpoints `GET /api/lazo/dominio`,
-  `POST /api/lazo/evaluar`. Frontend `/claridad`. Testeado 100%.
-- REDISEÑO (2026-09-02): paleta arquitectónica (ladrillo/cielo/césped/arena). KPIs 100%
-  gráficos = SEMÁFORO (verde/amarillo/rojo), sin nombres ni números. "Geodésicas" →
-  "Trayectorias": único texto; oculto hasta que el usuario lo CONVOCA (indicador que
-  pulsa), o automático cuando el backend marca CÉNIT (requiere_cenit) con estilo de alta
-  atención (ladrillo). Distinción gráfica/baja-atención vs texto/alta-atención. Testeado 100%.
+## Implementado (sesión 2026-06)
+### Fusión aprendiz ↔ empresas (asistente silencioso de etiquetado)
+- El aprendiz queda **IDÉNTICO para unipersonales**.
+- Para **empresas**, al final del embudo RAG el aprendiz sugiere una acción/etiqueta
+  para lo ingestado (archivos + **campo de escritura libre nuevo** en `/archivos`).
+  No es explícito: el frontend NO muestra nombres (aprendiz/modelo/cabezas); solo
+  un chip "Sugerencia para etiquetar". Usuario **confirma** o **corrige** (texto libre).
+- **Registro separado con timestamp**: tabla SQLite `aprendiz_decisiones` +
+  `aprendiz_data/{dominio}_learning_log.jsonl` con el **schema EXACTO** de los
+  notebooks (backbone_inference, action_execution.{user_accepted_suggestion,
+  action_id, action_label, action_known}, soft_context, learning_event en
+  correcciones). Actualiza `{dominio}_action_dictionary_state.json`.
+- **Ajuste automático cada 50 días** tras la activación: `ajuste_bimestral.py`
+  ejecuta el notebook real `Mileforum_Aprendiz_Ajuste_Bimestral_v0_1.ipynb` vía
+  nbclient (offline), entrena el PolicyAdapter y **reemplaza el modelo**
+  promoviendo `{dominio}_policy_adapter.pt` + vocabularios/allowlist. Scheduler
+  daemon (cada 6h) + endpoint manual.
+- Endpoints nuevos: `POST /api/aprendiz/{dominio}/decision-asistente`,
+  `GET /api/aprendiz/{dominio}/decisiones`, `POST /api/aprendiz/{dominio}/ajuste/ejecutar`,
+  `GET /api/aprendiz/{dominio}/ajuste/estado`.
+- Deps añadidas: torch, nbclient, nbformat, ipykernel.
 
-### 2) Activador / Validador (verificado, sin cambios de código)
-- La verificación en `server.py` (`verificar_activador`, `_generar_firma`) coincide
-  EXACTAMENTE con `generar_activador.py` (referencia externa del operador):
-  clave `mileforum-prudential-2026-clave-privada-antonio`, HMAC-SHA256 sobre
-  `json.dumps(campos, sort_keys=True, ensure_ascii=False)` sin el campo `firma`.
-- Probado: válido→activo; firma alterada / cliente_id ajeno / vencido→rechazado.
-- La generación NO está en la app (solo verificación). `mileforum_activador.json` de
-  prueba está ligado al cliente_id de esta máquina de preview.
+### Estado de pruebas
+- Testing agent: backend 100% (9/9), frontend 100%. Sin issues críticos.
 
-### 3) Compresión Geométrica — Códec MOCG (2026-09-02)
-- `backend/compresion_geometrica.py` (Python puro + numpy; sin gradio/plotly/scipy):
-  clasifica por contenido, normaliza a eventos, manifold incremental 8D, comprime en
-  3 capas (íntegra lossless / inferible PCA2 / geométrica) + reporte de forma con
-  anomalías. `comprimir`, `descomprimir` (exacto, sha256), `es_paquete_comprimido`.
-- Endpoints: `POST /api/compresion/toggle` (alterna: comprime, o descomprime si se
-  sube un paquete MOCG_CODEC_V1) y `POST /api/compresion/sistema/{dominio}` (comprime
-  carpetas del sistema: aprendiz_data, bundles, session_files, bimestral_package).
-- Frontend `/archivos` (`ArchivosEmbudo.jsx`): subida de archivos, botón
-  "Procesar con el embudo" (RAG: expedientes/documentos/procesar) y botón único
-  "Comprimir / Descomprimir". Testeado 100% (round-trip lossless).
-
-### Modo del lazo (hardcodeado)
-- Constante `MODO_LAZO = 'ASESORIA'` en `frontend/src/components/ArchivosEmbudo.jsx`.
-  Para otro repo/build cambiar a `'AGENCIA'` en esa línea (comentada).
-
-### 4) Flujo de KPIs — Cucurucho → 7 KPIs → Lazo (2026-09-02)
-- `backend/flujo_kpis.py`: cliente→dominio→cucurucho. El embudo (AG3 limpiador +
-  AG5 ingeniero de features) SEPARA los 7 KPIs holográficos + features de control
-  (c_viabilidad, firmeza_suelo_R, delta_coherencia) desde archivos de operación
-  (cosecha, pagos, etc.) y entrega ENTRADA LIMPIA al lazo. Sin archivos → usa la
-  operación demo del palenque.
-- Config en `backend/flujo/`: clientes/, dominios/, params/ (parametrización palenque),
-  cucurucho/cucurucho_base_v1.json. 6 dominios empresariales = únicos válidos; palenque
-  (dom_fermentacion_lotes_v1) es SOLO demostración (es_demo).
-- Endpoints: `GET /api/flujo/dominios`, `GET /api/flujo/clientes`, `POST /api/flujo/ejecutar`.
-- Frontend: sección "Observación · Cucurucho → Métricas" en `/archivos` (selector de cliente,
-  botón "Preparar las métricas y ejecutar la observación", muestra cada métrica geométrica
-  (semáforo) EN ARMONÍA con sus datos tradicionales/discretos + control + trayectoria).
-  Lenguaje técnico: KPIs=nombre interno → "métricas"; lazo → "observación". Cucurucho+agentes
-  = elemento de claridad (universal); semáforo/trayectoria = elemento de habitabilidad
-  (variará más adelante). Backend expone `metricas_discretas` (dato discreto ↔ geométrico).
-
-## Estilo / Paleta (2026-09-02)
-
-### 5) Doble hélice por dominio — 7 métricas para los 6 tipos de empresa (2026-09-02)
-- Cada `cucurucho_{sector}_v1.json` en `/app` (main) se amplió con `mapa_metricas`
-  (categorias_operacion + kpi_map + demo_operacion) que define qué significa cada una de
-  las 7 métricas geométricas para ese dominio (restaurante, retail, hotel, fábrica,
-  logística, clínica). Así cada uno tiene su doble hélice: dato tradicional (discreto) ↔
-  contraparte geométrica, y entrega el input necesario al elemento de habitabilidad.
-- Backend `flujo_kpis.py`: `cargar_mapa_dominio` lee el `mapa_metricas` del cucurucho en
-  main; `ejecutar_flujo_dominio(domain_id,...)`. Endpoint `POST /api/flujo/ejecutar-dominio`.
-- Frontend `/archivos`: selector `flujo-dominio-select` (6 empresariales + demo palenque);
-  ejecutar por dominio muestra las 7 métricas (semáforo + valor + detalle discreto) + control
-  + trayectoria. Elemento de claridad (cucurucho+agentes) universal e intacto. Testeado 100%
-  (pytest parametrizado + Playwright).
-- Paleta arquitectónica (ladrillo/cielo/césped/arena) en `/claridad` y `/archivos`.
-- Marca de agua `Watermark.jsx` (acuarela clara de las dos épocas + cielo, degradada).
-
-## Cambios de infraestructura (sin alterar comportamiento)
-- `backend/local_storage.py`: helper de persistencia local (disco), usado por las
-  subidas para centralizar la escritura. Comportamiento idéntico (archivos locales).
-- `backend/app/db/sqlite_db.py`: reparado docstring corrupto (comilla triple sin cerrar).
-  Archivo huérfano (no importado por nadie).
-
-## Pruebas
-- iteration_2.json (lazo) OK; iteration_3.json (compresión) OK. Backend/Frontend 100%.
-- Tests: `backend/tests/test_lazo.py`, `backend/tests/test_compresion.py`.
-
-## Backlog / Next
-
-### 6) Calibración real + columnas reales + memoria comprimida (2026-09-02)
-- **Auto-calibración**: `POST /api/flujo/ejecutar-dominio` acepta `calibrar=true`; ajusta los
-  rangos de normalización de cada métrica con el min/max observado en los archivos reales
-  (el semáforo refleja la operación exacta). Devuelve `calibracion.rangos` aplicados.
-- **Columnas reales**: `_mapear_columnas` + `SINONIMOS` mapean nombres reales de columnas
-  (occupancy→ocupacion_pct, otif, ventas, etc.) a las señales esperadas por dominio; ya no
-  depende del demo cuando se suben archivos.
-- **Memoria comprimida**: cada ejecución se guarda automáticamente COMPRIMIDA por el códec
-  MOCG en `backend/flujo/memoria/{domain_id}/`. Endpoint `GET /api/flujo/historial/{domain_id}`.
-  Frontend muestra checkbox "Calibrar", etiqueta de memoria (ratio) e historial. Testeado.
-
-- P2: Pantalla de configuración inicial en React (hoy el sistema no está "configurado",
-  por eso el embudo RAG pide configuración). El flujo real vive en el exe Flutter.
-- P2: Descarga directa del paquete/archivos del sistema comprimido desde /archivos.
+## Backlog / Próximos
+- P1: Inferencia usando el `policy_adapter.pt` promovido para refinar la
+  sugerencia del asistente (hoy la sugerencia base viene del RAG).
+- P2: Vista de historial de decisiones / estado del ajuste dentro de `/archivos`.
+- P2: Refactor de ArchivosEmbudo.jsx en subcomponentes (~540 líneas).
+- P2: Alinear naming de respuestas del feature aprendiz.

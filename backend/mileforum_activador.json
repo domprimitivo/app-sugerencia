@@ -1,9 +1,7 @@
 {
-  "cliente_id": "99fe916dc362486e83cc432c57023938",
-  "dominio_id": "hotel",
-  "emitido_en": "2026-09-02T15:07:45.380947Z",
-  "valido_hasta": "2026-11-01T15:07:45.380947Z",
-  "meses": 2,
-  "nota": "prueba activacion",
-  "firma": "fd755709d8689b7d3ee73751e194d4edb9d9eefa37a607d6828af803af99b20b"
+  "cliente_id": "7e7cb50ecdfee392d46e15808afeb3dc",
+  "valido_hasta": "2027-01-07T15:08:20.871364+00:00",
+  "plan": "pro",
+  "emitido_por": "antonio",
+  "firma": "7e8a12450e3f4a650df09cf9d87af35717b2448bfadbfbcc6bc3a4208864c8cf"
 }

@@ -1,0 +1,18 @@
+{
+  "summary": "Validado feature 'aprendiz silencioso' en dominio empresa 'hotel'. Backend: 9/9 pytest passed (motor estado empresa, /api/dominios y /api/config OK; procesar expediente devuelve `asistente` completo con node_id/dominio/suggested_action_id/label/phase/phase_probs/clarity/R_score/soft_tags/confianza; decision-asistente confirmar => status registrado + user_accepted=true + action_execution.user_accepted_suggestion=true + action_known=true; corregir con texto => user_accepted=false + action_label='activar protocolo X' + action_known=false + learning_event.type='correction'; corregir vacío devuelve 400; /decisiones total=7 con timestamp; /ajuste/estado intervalo_dias=50 con activado_en/proximo_ajuste; /ajuste/ejecutar tarda ~5s y devuelve status=ok, estado=completado, modelo_reemplazado=true con policy_adapter.pt en artefactos_promovidos). Frontend /archivos: escritura-libre-input + procesar-embudo-btn producen la tarjeta asistente-sugerencia con la etiqueta 'Sugerencia para etiquetar' y la acción ('revisar operacion'); botones Confirmar/Corregir presentes. Flujo Corregir: input+guardar => 'Corrección anotada.' y tarjeta desaparece. Flujo Confirmar: 'Anotado.' y tarjeta desaparece. Verificado NO EXPLÍCITO: la tarjeta NO contiene 'aprendiz', 'modelo', 'cabezas' ni 'backbone'.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": ["/app/backend/tests/test_aprendiz_asistente.py", "/app/test_reports/pytest/aprendiz_asistente.xml"],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "ArchivosEmbudo.jsx sigue creciendo (~540 líneas). Considerar extraer la tarjeta Asistente y el panel Flujo a subcomponentes para mantener el archivo por debajo del umbral de 700.",
+    "El endpoint /api/aprendiz/{dominio}/decisiones devuelve `registros` (no `decisiones`/`items`); documentar la clave o alinear naming entre respuestas del feature aprendiz."
+  ],
+  "updated_files": ["/app/backend/tests/test_aprendiz_asistente.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "seed_data_creation": "Se agregaron 2 decisiones adicionales (1 confirmar + 1 corregir 'activar protocolo X') vía tests sobre el hotel_learning_log.jsonl. Total actual de decisiones registradas: 7.",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Feature aprendiz silencioso (dominio 'hotel', modo empresa) validado end-to-end. Endpoints clave: POST /api/expedientes/{id}/procesar (adjunta objeto `asistente`), POST /api/aprendiz/hotel/decision-asistente (decision confirmar|corregir), GET /api/aprendiz/hotel/decisiones (clave `registros`, no `decisiones`), GET /api/aprendiz/hotel/ajuste/estado (intervalo_dias=50), POST /api/aprendiz/hotel/ajuste/ejecutar (~5s, promueve policy_adapter.pt). data-testids frontend: escritura-libre-input, procesar-embudo-btn, asistente-sugerencia, asistente-accion, asistente-confirmar-btn, asistente-corregir-btn, asistente-correccion-input, asistente-guardar-correccion-btn, asistente-decision-msg. La tarjeta usa el label 'Sugerencia para etiquetar' y NO expone nombres internos (aprendiz/modelo/cabezas/backbone).",
+  "test_credentials": "None (no auth)"
+}

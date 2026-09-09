@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import {
   ArrowLeft, Upload, FileArchive, FileUp, Boxes, RefreshCw,
-  CheckCircle2, AlertTriangle, Download, Filter,
+  CheckCircle2, AlertTriangle, Download, Filter, Lightbulb, Check, Pencil,
 } from 'lucide-react';
 import { Watermark } from './Watermark';
 
@@ -43,6 +43,12 @@ export const ArchivosEmbudo = () => {
   const [report, setReport] = useState(null);
   const [reconstruidos, setReconstruidos] = useState(null);
   const [embudoOut, setEmbudoOut] = useState(null);
+  const [freeText, setFreeText] = useState('');
+  const [asistente, setAsistente] = useState(null);
+  const [corrigiendo, setCorrigiendo] = useState(false);
+  const [correccion, setCorreccion] = useState('');
+  const [decisionMsg, setDecisionMsg] = useState(null);
+  const [guardandoDec, setGuardandoDec] = useState(false);
   const [msg, setMsg] = useState(null);
   const [domainId, setDomainId] = useState('');
   const [calibrar, setCalibrar] = useState(false);
@@ -81,6 +87,7 @@ export const ArchivosEmbudo = () => {
   const onPick = (e) => {
     setFiles(Array.from(e.target.files || []));
     setReport(null); setReconstruidos(null); setEmbudoOut(null); setMsg(null);
+    setAsistente(null); setDecisionMsg(null); setCorrigiendo(false); setCorreccion('');
   };
 
   const comprimirToggle = async () => {
@@ -104,8 +111,9 @@ export const ArchivosEmbudo = () => {
   };
 
   const procesarEmbudo = async () => {
-    if (!files.length) { setMsg('Selecciona al menos un archivo.'); return; }
+    if (!files.length && !freeText.trim()) { setMsg('Selecciona archivos o escribe en el campo libre.'); return; }
     setLoading('embudo'); setMsg(null); setEmbudoOut(null);
+    setAsistente(null); setDecisionMsg(null); setCorrigiendo(false); setCorreccion('');
     try {
       const exp = await axios.post(`${API}/expedientes`, {
         nombre: `Embudo ${new Date().toISOString().slice(0, 16)}`,
@@ -116,12 +124,37 @@ export const ArchivosEmbudo = () => {
         const fd = new FormData(); fd.append('file', f);
         await axios.post(`${API}/expedientes/${expId}/documentos`, fd);
       }
+      if (freeText.trim()) {
+        const blob = new Blob([freeText], { type: 'text/plain' });
+        const fd = new FormData();
+        fd.append('file', new File([blob], 'escritura_libre.txt', { type: 'text/plain' }));
+        await axios.post(`${API}/expedientes/${expId}/documentos`, fd);
+      }
       const res = await axios.post(`${API}/expedientes/${expId}/procesar`, { tipo_consulta: 'analisis' });
       setEmbudoOut(res.data);
+      if (res.data && res.data.asistente) setAsistente(res.data.asistente);
       setMsg('Procesado con el embudo (RAG) correctamente.');
     } catch (e) {
       setMsg('Embudo: ' + (e.response?.data?.detail || e.message));
     } finally { setLoading(null); }
+  };
+
+  const registrarDecision = async (decision) => {
+    if (!asistente) return;
+    if (decision === 'corregir' && !correccion.trim()) { setDecisionMsg('Escribe la acción correcta.'); return; }
+    setGuardandoDec(true); setDecisionMsg(null);
+    try {
+      await axios.post(`${API}/aprendiz/${asistente.dominio}/decision-asistente`, {
+        sugerencia: asistente,
+        decision,
+        correccion: decision === 'corregir' ? correccion.trim() : null,
+        fuente: 'embudo',
+      });
+      setDecisionMsg(decision === 'confirmar' ? 'Anotado.' : 'Corrección anotada.');
+      setAsistente(null); setCorrigiendo(false); setCorreccion('');
+    } catch (e) {
+      setDecisionMsg('No se pudo anotar: ' + (e.response?.data?.detail || e.message));
+    } finally { setGuardandoDec(false); }
   };
 
   const panel = { background: C.panel, border: `1px solid ${C.border}` };
@@ -166,6 +199,22 @@ export const ArchivosEmbudo = () => {
             </ul>
           )}
 
+          <div className="mt-5">
+            <label className="block font-mono text-xs uppercase tracking-wider mb-2" style={{ color: C.brick }} htmlFor="escritura-libre">
+              Escritura libre
+            </label>
+            <textarea
+              id="escritura-libre"
+              value={freeText}
+              onChange={(e) => setFreeText(e.target.value)}
+              rows={4}
+              placeholder="Escribe aquí lo que quieras ingestar (notas, incidencias, contexto de la operación)…"
+              className="w-full rounded-xl px-4 py-3 text-sm resize-y"
+              style={{ background: '#FFFFFF88', border: `1px solid ${C.border}`, color: C.ink }}
+              data-testid="escritura-libre-input"
+            />
+          </div>
+
           <div className="flex flex-wrap gap-3 mt-6">
             <button
               onClick={procesarEmbudo} disabled={loading !== null}
@@ -188,6 +237,81 @@ export const ArchivosEmbudo = () => {
           </div>
 
           {msg && <p className="mt-4 text-sm" style={{ color: C.ink }} data-testid="archivos-msg">{msg}</p>}
+
+          {asistente && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              className="mt-5 rounded-xl px-5 py-4"
+              style={{ background: '#FFFFFFaa', border: `1px dashed ${C.sky}` }}
+              data-testid="asistente-sugerencia"
+            >
+              <div className="flex items-start gap-3">
+                <Lightbulb className="w-5 h-5 mt-0.5 shrink-0" style={{ color: C.sky }} />
+                <div className="flex-1">
+                  <p className="text-[11px] font-mono uppercase tracking-wider" style={{ color: C.muted }}>
+                    Sugerencia para etiquetar
+                  </p>
+                  <p className="text-base font-semibold" style={{ color: C.ink }} data-testid="asistente-accion">
+                    {(asistente.suggested_action_label || '').replace(/_/g, ' ')}
+                  </p>
+
+                  {!corrigiendo ? (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      <button
+                        onClick={() => registrarDecision('confirmar')}
+                        disabled={guardandoDec}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-transform active:scale-95 disabled:opacity-60"
+                        style={{ background: C.grass, color: '#F4EEDF' }}
+                        data-testid="asistente-confirmar-btn"
+                      >
+                        <Check className="w-4 h-4" /> Confirmar
+                      </button>
+                      <button
+                        onClick={() => { setCorrigiendo(true); setDecisionMsg(null); }}
+                        disabled={guardandoDec}
+                        className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm transition-transform active:scale-95 disabled:opacity-60"
+                        style={{ border: `1.5px solid ${C.brick}`, color: C.brick, background: 'transparent' }}
+                        data-testid="asistente-corregir-btn"
+                      >
+                        <Pencil className="w-4 h-4" /> Corregir
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="mt-3 space-y-2">
+                      <input
+                        type="text"
+                        value={correccion}
+                        onChange={(e) => setCorreccion(e.target.value)}
+                        placeholder="Escribe la acción correcta…"
+                        className="w-full rounded-full px-4 py-2 text-sm"
+                        style={{ background: '#FFFFFF', border: `1px solid ${C.border}`, color: C.ink }}
+                        data-testid="asistente-correccion-input"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => registrarDecision('corregir')}
+                          disabled={guardandoDec}
+                          className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-semibold transition-transform active:scale-95 disabled:opacity-60"
+                          style={{ background: C.brick, color: '#F4EEDF' }}
+                          data-testid="asistente-guardar-correccion-btn"
+                        >
+                          {guardandoDec ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />} Guardar
+                        </button>
+                        <button
+                          onClick={() => { setCorrigiendo(false); setCorreccion(''); }}
+                          className="px-4 py-1.5 rounded-full text-sm" style={{ color: C.muted }}
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          )}
+
+          {decisionMsg && <p className="mt-3 text-sm" style={{ color: C.grass }} data-testid="asistente-decision-msg">{decisionMsg}</p>}
         </section>
 
         {/* ── Flujo de KPIs: Cucurucho → 7 KPIs limpios → Lazo ── */}
@@ -389,7 +513,7 @@ export const ArchivosEmbudo = () => {
             className="rounded-2xl p-6" style={panel} data-testid="embudo-out">
             <h2 className="font-mono text-xs uppercase tracking-wider mb-3" style={{ color: C.brick }}>Salida del embudo (RAG)</h2>
             <pre className="text-xs overflow-x-auto whitespace-pre-wrap" style={{ color: C.ink }}>
-              {JSON.stringify(embudoOut, null, 2)}
+              {JSON.stringify((() => { const { asistente, ...rest } = embudoOut || {}; return rest; })(), null, 2)}
             </pre>
           </motion.section>
         )}

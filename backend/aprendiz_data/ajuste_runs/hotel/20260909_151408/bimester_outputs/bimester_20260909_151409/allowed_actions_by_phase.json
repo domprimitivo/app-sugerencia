@@ -1,0 +1,22 @@
+{
+  "Resolución en Curso": [
+    {
+      "action_id": "activar_protocolo_de_contingencia",
+      "label": "activar protocolo de contingencia"
+    },
+    {
+      "action_id": "revisar_operacion",
+      "label": "revisar_operacion"
+    }
+  ],
+  "Estabilidad": [
+    {
+      "action_id": "revisar_operacion",
+      "label": "revisar_operacion"
+    },
+    {
+      "action_id": "activar_protocolo_x",
+      "label": "activar protocolo X"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "actions_by_phase": {
+    "Resolución en Curso": [
+      {
+        "action_id": "activar_protocolo_de_contingencia",
+        "label": "activar protocolo de contingencia"
+      },
+      {
+        "action_id": "revisar_operacion",
+        "label": "revisar_operacion"
+      }
+    ]
+  },
+  "updated_at": "2026-09-09T15:09:47.312634+00:00"
+}

@@ -22,6 +22,11 @@ import uuid
 from datetime import datetime, timezone
 import shutil
 from local_storage import guardar_stream
+from asistente_aprendiz import (
+    construir_sugerencia, construir_evento, escribir_learning_log,
+    actualizar_action_dictionary, slugify,
+)
+import ajuste_bimestral
 
 def _resolver_root_dir() -> Path:
     """
@@ -160,6 +165,26 @@ def init_sqlite():
             );
 
             CREATE INDEX IF NOT EXISTS idx_ingesta_dominio ON ingesta_webhook(dominio, received_at);
+
+            CREATE TABLE IF NOT EXISTS aprendiz_decisiones (
+                id                       TEXT PRIMARY KEY,
+                dominio                  TEXT NOT NULL,
+                node_id                  TEXT,
+                timestamp                TEXT NOT NULL,
+                fuente                   TEXT,
+                suggested_action_id      TEXT,
+                suggested_action_label   TEXT,
+                final_action_id          TEXT,
+                final_action_label       TEXT,
+                user_accepted            INTEGER,
+                correccion_texto         TEXT,
+                phase                    TEXT,
+                r_score                  REAL,
+                confianza                REAL,
+                payload_json             TEXT
+            );
+
+            CREATE INDEX IF NOT EXISTS idx_aprendiz_decisiones_dominio ON aprendiz_decisiones(dominio, timestamp);
         """)
         _conn.commit()
 
@@ -533,6 +558,7 @@ class ProcesamientoEmpresaResponse(BaseModel):
     resumen: str
     documentos_procesados: List[Dict[str, Any]]
     total_documentos: int
+    asistente: Optional[Dict[str, Any]] = None
 
 class DecisionCreate(BaseModel):
     expediente_id: str
@@ -765,6 +791,12 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
 
         db_execute("UPDATE expedientes SET estado = 'completado', updated_at = ? WHERE id = ?",
                    (datetime.now(timezone.utc).isoformat(), expediente_id))
+
+        # Asistente silencioso: al final del embudo RAG, sugiere una etiqueta/acción
+        # para lo ingestado. No es explícito; sólo sugiere y espera confirmación.
+        asistente = construir_sugerencia(config["dominio_id"], expediente_id, resultado)
+
+        resultado["asistente"] = asistente
         return ProcesamientoEmpresaResponse(**resultado)
 
 @api_router.post("/sincronizaciones/{expediente_id}/decision", response_model=Decision)
@@ -1806,6 +1838,157 @@ async def flujo_historial(domain_id: str):
     return _listar_memoria(domain_id)
 
 
+# ─── Asistente Aprendiz (empresas) + Ajuste bimestral automático ─────────────
+
+AJUSTE_INTERVALO_DIAS = 50
+
+
+class DecisionAsistenteInput(BaseModel):
+    sugerencia: Dict[str, Any]
+    decision: Literal["confirmar", "corregir"]
+    correccion: Optional[str] = None
+    fuente: Optional[str] = "embudo"
+
+
+@api_router.post("/aprendiz/{dominio}/decision-asistente")
+async def registrar_decision_asistente(dominio: str, input: DecisionAsistenteInput):
+    """
+    Registra la confirmación o corrección del humano sobre la sugerencia
+    silenciosa del asistente. Escribe en la tabla `aprendiz_decisiones` y en
+    el `learning_log.jsonl` (schema del notebook) para alimentar el ajuste.
+    """
+    sug = input.sugerencia or {}
+    if not sug.get("node_id") or not sug.get("suggested_action_label"):
+        raise HTTPException(status_code=400, detail="Sugerencia incompleta.")
+
+    user_accepted = input.decision == "confirmar"
+    final_label = (input.correccion or "").strip() if not user_accepted else sug["suggested_action_label"]
+    if not user_accepted and not final_label:
+        raise HTTPException(status_code=400, detail="La corrección requiere texto.")
+
+    evento = construir_evento(sug, user_accepted, final_label)
+    escribir_learning_log(APRENDIZ_DIR, dominio, evento)
+
+    ae = evento["action_execution"]
+    actualizar_action_dictionary(APRENDIZ_DIR, dominio, evento["backbone_inference"]["phase"],
+                                 ae["action_id"], ae["action_label"])
+
+    dec_id = str(uuid.uuid4())
+    db_execute(
+        """INSERT INTO aprendiz_decisiones
+           (id, dominio, node_id, timestamp, fuente, suggested_action_id, suggested_action_label,
+            final_action_id, final_action_label, user_accepted, correccion_texto,
+            phase, r_score, confianza, payload_json)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (dec_id, dominio, sug.get("node_id"), evento["timestamp"], input.fuente,
+         sug.get("suggested_action_id"), sug.get("suggested_action_label"),
+         ae["action_id"], ae["action_label"], 1 if user_accepted else 0,
+         input.correccion, evento["backbone_inference"]["phase"],
+         sug.get("R_score"), sug.get("confianza"),
+         json.dumps(evento, ensure_ascii=False))
+    )
+
+    return {"status": "registrado", "decision_id": dec_id,
+            "user_accepted": user_accepted, "evento": evento}
+
+
+@api_router.get("/aprendiz/{dominio}/decisiones")
+async def listar_decisiones_asistente(dominio: str, limit: int = 50):
+    rows = db_query(
+        """SELECT id, node_id, timestamp, fuente, suggested_action_label,
+                  final_action_label, user_accepted, correccion_texto, phase, confianza
+           FROM aprendiz_decisiones WHERE dominio = ? ORDER BY timestamp DESC LIMIT ?""",
+        (dominio, limit)
+    )
+    registros = []
+    for r in rows:
+        d = row_to_dict(r)
+        d["user_accepted"] = bool(d.get("user_accepted"))
+        registros.append(d)
+    total = db_query_one("SELECT COUNT(*) c FROM aprendiz_decisiones WHERE dominio = ?", (dominio,))
+    return {"dominio": dominio, "total": total["c"] if total else 0, "registros": registros}
+
+
+@api_router.post("/aprendiz/{dominio}/ajuste/ejecutar")
+async def ejecutar_ajuste(dominio: str):
+    """
+    Ejecuta el notebook de ajuste bimestral para el dominio y reemplaza el
+    modelo del aprendiz con el policy_adapter recién entrenado. Local y offline.
+    """
+    import asyncio
+    resultado = await asyncio.to_thread(ajuste_bimestral.ejecutar, dominio, ROOT_DIR, APRENDIZ_DIR)
+    if resultado.get("estado") == "error":
+        return {"status": "error", **resultado}
+    return {"status": "ok", **resultado}
+
+
+@api_router.get("/aprendiz/{dominio}/ajuste/estado")
+async def estado_ajuste(dominio: str):
+    est = ajuste_bimestral.estado(APRENDIZ_DIR, dominio)
+    config = load_config()
+    activado_en = config.get("activado_en")
+    proximo = None
+    if activado_en:
+        try:
+            base_dt = datetime.fromisoformat(activado_en)
+            ultimo = est.get("ultimo_run")
+            ref = datetime.fromisoformat(ultimo) if ultimo else base_dt
+            from datetime import timedelta
+            proximo = (ref + timedelta(days=AJUSTE_INTERVALO_DIAS)).isoformat()
+        except Exception:
+            pass
+    return {**est, "intervalo_dias": AJUSTE_INTERVALO_DIAS,
+            "activado_en": activado_en, "proximo_ajuste": proximo}
+
+
+def _registrar_activacion_si_nueva():
+    """Guarda la fecha de activación la primera vez que el activador es válido."""
+    if _estado_activacion.get("activo"):
+        config = load_config()
+        if not config.get("activado_en"):
+            config["activado_en"] = datetime.now(timezone.utc).isoformat()
+            save_config(config)
+            logger.info(f"[activacion] Fecha de activación registrada: {config['activado_en']}")
+
+
+def _ajuste_auto_pendiente(dominio: str) -> bool:
+    from datetime import timedelta
+    config = load_config()
+    activado_en = config.get("activado_en")
+    if not activado_en:
+        return False
+    try:
+        base_dt = datetime.fromisoformat(activado_en)
+    except Exception:
+        return False
+    est = ajuste_bimestral.estado(APRENDIZ_DIR, dominio)
+    ultimo = est.get("ultimo_run")
+    ref = datetime.fromisoformat(ultimo) if ultimo else base_dt
+    if datetime.now(timezone.utc) < ref + timedelta(days=AJUSTE_INTERVALO_DIAS):
+        return False
+    # sólo si hay decisiones que aprender
+    total = db_query_one("SELECT COUNT(*) c FROM aprendiz_decisiones WHERE dominio = ?", (dominio,))
+    return bool(total and total["c"] > 0)
+
+
+def _scheduler_ajuste_loop():
+    """Cada 6h revisa si toca el ajuste automático (50 días) del dominio activo."""
+    import time
+    while True:
+        try:
+            _refrescar_activacion()
+            _registrar_activacion_si_nueva()
+            config = load_config()
+            dominio = config.get("dominio_id")
+            if (dominio and not _estado_activacion.get("modo_lectura")
+                    and _ajuste_auto_pendiente(dominio)):
+                logger.info(f"[scheduler] Ejecutando ajuste automático de {dominio}")
+                ajuste_bimestral.ejecutar(dominio, ROOT_DIR, APRENDIZ_DIR)
+        except Exception as e:
+            logger.error(f"[scheduler] error: {e}")
+        time.sleep(6 * 3600)
+
+
 # ─── Registro del router y arranque ─────────────────────────────────────────
 
 app.include_router(api_router)
@@ -1849,7 +2032,13 @@ async def startup_inicializar_motor():
 
     # Verificar activador al arrancar
     _refrescar_activacion()
+    _registrar_activacion_si_nueva()
     logger.info(f"[startup] Activacion: {_estado_activacion.get('mensaje', '')}")
+
+    # Scheduler de ajuste automático (50 días) en hilo daemon
+    t = threading.Thread(target=_scheduler_ajuste_loop, daemon=True)
+    t.start()
+    logger.info("[startup] Scheduler de ajuste automático iniciado.")
 
 
 @app.on_event("shutdown")

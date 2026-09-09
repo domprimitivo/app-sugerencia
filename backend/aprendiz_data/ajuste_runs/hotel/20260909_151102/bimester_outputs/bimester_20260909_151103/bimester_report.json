@@ -1,0 +1,42 @@
+{
+  "run_id": "20260909_151103",
+  "bundle_zip": "hotel_synthetic_bundle.zip",
+  "bundle_sha256": "a6e0d3a6801dc8a4855eb44f535762d5d6030b38751ace6a711150126b4db5e5",
+  "domain_dir": "hotel",
+  "target_domain": "hotel",
+  "time_window": {
+    "start": "2000-01-01",
+    "end": "2100-01-01"
+  },
+  "counts": {
+    "events_in_window": 5,
+    "samples_supervised": 5,
+    "samples_after_allowlist": 5,
+    "new_actions_observed": 1,
+    "actions_added_to_catalog": 0,
+    "allow_vocab_size": 2
+  },
+  "allowlist_policy": {
+    "mode": "conservative",
+    "min_new_action_freq": 2
+  },
+  "training": {
+    "epochs": 8,
+    "batch_size": 64,
+    "lr": 0.0002,
+    "weight_decay": 0.0001,
+    "best_epoch": 8,
+    "best_val_loss": 0.6753936409950256
+  },
+  "feature_spec": {
+    "phase_prob_keys": [
+      "Equilibrio",
+      "Estabilidad",
+      "Resolución en Curso",
+      "Tensión Operativa"
+    ],
+    "soft_vocab_size": 2,
+    "in_dim": 11,
+    "out_dim": 2
+  }
+}
