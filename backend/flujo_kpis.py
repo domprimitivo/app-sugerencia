@@ -18,6 +18,7 @@ import json
 import csv
 import io
 import re
+import sys
 import time
 import uuid
 from pathlib import Path
@@ -31,7 +32,12 @@ from lazo_generico import (
 )
 from compresion_geometrica import comprimir as _comprimir_codec
 
-BASE = Path(__file__).resolve().parent
+# Frozen-aware: en .exe (PyInstaller) los catálogos/memoria del flujo viven
+# junto al ejecutable (no en la carpeta temporal _MEIPASS).
+if getattr(sys, "frozen", False):
+    BASE = Path(sys.executable).parent
+else:
+    BASE = Path(__file__).resolve().parent
 FLUJO_DIR = BASE / "flujo"
 MEMORIA_DIR = FLUJO_DIR / "memoria"
 MAIN_DIR = BASE.parent  # /app (donde viven los cucurucho_*.json de los 6 dominios)

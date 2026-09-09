@@ -18,6 +18,7 @@ Coloca los bundles en:
 
 import json
 import math
+import sys
 import zipfile
 import logging
 import numpy as np
@@ -27,7 +28,12 @@ from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
-MODELOS_DIR = Path(__file__).parent / "modelos"
+# Frozen-aware: en .exe (PyInstaller) los datos persistentes viven junto al
+# ejecutable, no en la carpeta temporal _MEIPASS.
+if getattr(sys, "frozen", False):
+    MODELOS_DIR = Path(sys.executable).parent / "modelos"
+else:
+    MODELOS_DIR = Path(__file__).parent / "modelos"
 
 # Mapa bundle por dominio_id
 BUNDLE_NAMES = {

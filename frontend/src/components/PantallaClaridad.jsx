@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Compass, Import, Check } from 'lucide-react';
+import { ArrowLeft, Compass, Import, Check, Boxes, Home } from 'lucide-react';
 import { Watermark } from './Watermark';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
@@ -92,6 +92,18 @@ export const PantallaClaridad = () => {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <Compass className="w-5 h-5" style={{ color: '#F4EEDF' }} />
+            <nav className="flex items-center gap-3 ml-1">
+              <Link to="/archivos" data-testid="claridad-nav-embudo"
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold rounded-full px-3 py-1.5 transition-transform active:scale-95"
+                style={{ color: '#F4EEDF', background: '#00000022' }}>
+                <Boxes className="w-4 h-4" /> Embudo
+              </Link>
+              <Link to="/" data-testid="claridad-nav-inicio"
+                className="flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-colors"
+                style={{ color: '#F4EEDFcc' }}>
+                <Home className="w-4 h-4" /> Inicio
+              </Link>
+            </nav>
           </div>
           {/* Toggle de modo (gráfico) */}
           <div className="flex items-center gap-1 rounded-full p-1" style={{ background: '#00000022' }}>

@@ -2,9 +2,9 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import {
-  ArrowLeft, Upload, FileArchive, FileUp, Boxes, RefreshCw,
+import { ArrowLeft, Upload, FileArchive, FileUp, Boxes, RefreshCw,
   CheckCircle2, AlertTriangle, Download, Filter, Lightbulb, Check, Pencil,
+  Compass, Home,
 } from 'lucide-react';
 import { Watermark } from './Watermark';
 
@@ -175,6 +175,18 @@ export const ArchivosEmbudo = () => {
             <h1 className="font-mono text-sm sm:text-base font-bold" style={{ color: '#F4EEDF' }}>ARCHIVOS · EMBUDO</h1>
             <p className="text-xs" style={{ color: '#F4EEDFbb' }}>Ingesta RAG · Compresión geométrica · Modo {MODO_LAZO === 'ASESORIA' ? 'Asesoría' : 'Agencia'}</p>
           </div>
+          <nav className="ml-auto flex items-center gap-4">
+            <Link to="/claridad" data-testid="archivos-nav-claridad"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold rounded-full px-3 py-1.5 transition-transform active:scale-95"
+              style={{ color: '#F4EEDF', background: '#00000022' }}>
+              <Compass className="w-4 h-4" /> Claridad
+            </Link>
+            <Link to="/" data-testid="archivos-nav-inicio"
+              className="flex items-center gap-1.5 text-xs sm:text-sm font-medium transition-colors"
+              style={{ color: '#F4EEDFcc' }}>
+              <Home className="w-4 h-4" /> Inicio
+            </Link>
+          </nav>
         </div>
       </header>
 

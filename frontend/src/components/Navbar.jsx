@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
@@ -61,6 +62,20 @@ export const Navbar = ({ onRegisterClick }) => {
                 {item.label}
               </a>
             ))}
+            <Link
+              to="/claridad"
+              className="text-zinc-400 hover:text-[#FACC15] transition-colors duration-200 font-medium"
+              data-testid="nav-claridad"
+            >
+              Claridad
+            </Link>
+            <Link
+              to="/archivos"
+              className="text-zinc-400 hover:text-[#FACC15] transition-colors duration-200 font-medium"
+              data-testid="nav-embudo"
+            >
+              Embudo
+            </Link>
           </div>
 
           {/* Desktop CTA Buttons */}
@@ -104,6 +119,22 @@ export const Navbar = ({ onRegisterClick }) => {
                     {item.label}
                   </a>
                 ))}
+                <Link
+                  to="/claridad"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-lg text-zinc-400 hover:text-[#FACC15] transition-colors"
+                  data-testid="mobile-nav-claridad"
+                >
+                  Claridad
+                </Link>
+                <Link
+                  to="/archivos"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-lg text-zinc-400 hover:text-[#FACC15] transition-colors"
+                  data-testid="mobile-nav-embudo"
+                >
+                  Embudo
+                </Link>
                 <div className="border-t border-zinc-800 pt-6 flex flex-col gap-4">
                   <Button
                     variant="outline"

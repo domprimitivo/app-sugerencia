@@ -121,3 +121,23 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
   era 100% gráfico; sin texto de KPI). `ArchivosEmbudo.jsx` ahora muestra K1..K7.
 - Validado por curl (lazo/dominio, lazo/evaluar, flujo/ejecutar-dominio) + screenshot
   de /claridad: sin fugas de nombres reales en el DOM ni en los payloads.
+## Añadido (sesión 7 · 2026-06) — Navegación + empaquetado .exe local
+- **Navegación fácil (React preview):** Navbar de la landing ahora tiene enlaces
+  "Claridad" (`/claridad`) y "Embudo" (`/archivos`) en desktop y menú móvil.
+  Cabeceras de ambas pantallas con enlaces cruzados directos (Claridad↔Embudo) +
+  "Inicio". testids: nav-claridad, nav-embudo, claridad-nav-embudo,
+  claridad-nav-inicio, archivos-nav-claridad, archivos-nav-inicio.
+- **Empaquetado local (Flutter es la UI del .exe; landing = web online):**
+  - `backend/build_backend.bat`: PyInstaller `--onefile --name aprendiz_backend`
+    con `--collect-all` de deps pesadas (torch, uvicorn, pdfplumber, openpyxl,
+    docx, nbclient/nbformat/ipykernel, papermill) + hidden-imports de los módulos
+    locales. NO usa --add-data: COPIA los assets read-only (flujo/, bundles/,
+    aprendiz_data/, modelos/, config.json) junto al .exe en dist\ (coherente con
+    `_resolver_root_dir()`; la BD mileforum.db y uploads/ se crean junto al exe).
+  - `Iniciar_App.bat` (raíz): lanza backend\dist\aprendiz_backend.exe minimizado,
+    espera, abre app\flutter_app.exe y al cerrarlo mata el backend.
+  - **Rutas frozen-aware unificadas:** además de server.py (ya lo tenía),
+    `flujo_kpis.py` (FLUJO_DIR/MEMORIA_DIR) y `aprendiz_motor/notebook_engine.py`
+    (MODELOS_DIR) ahora usan `Path(sys.executable).parent` cuando `sys.frozen`,
+    para que catálogos/memoria/modelos vivan junto al .exe (no en _MEIPASS).
+  - Nota: los .bat son para el build en Windows (no ejecutables en este contenedor).
