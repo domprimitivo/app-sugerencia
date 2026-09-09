@@ -731,6 +731,39 @@ async def eliminar_expediente(expediente_id: str):
         shutil.rmtree(exp_dir)
     return {"status": "deleted", "expediente_id": expediente_id}
 
+def extraer_texto_documento(file_path: Path, tipo: str, nombre: str) -> str:
+    """Extrae texto de un documento ingestado al embudo (PDF, DOCX, o texto plano)."""
+    ext = file_path.suffix.lower()
+    tipo = (tipo or "").lower()
+    try:
+        if ext == ".pdf" or "pdf" in tipo:
+            import pdfplumber
+            partes = []
+            with pdfplumber.open(str(file_path)) as pdf:
+                for page in pdf.pages:
+                    partes.append(page.extract_text() or "")
+            texto = "\n".join(partes).strip()
+            return texto or f"[PDF sin texto extraíble: {nombre}]"
+        if ext == ".docx" or "word" in tipo or "officedocument.wordprocessing" in tipo:
+            import docx
+            d = docx.Document(str(file_path))
+            partes = [p.text for p in d.paragraphs]
+            for t in d.tables:
+                for row in t.rows:
+                    partes.append(" | ".join(c.text for c in row.cells))
+            texto = "\n".join(partes).strip()
+            return texto or f"[DOCX vacío: {nombre}]"
+        with open(file_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except Exception:
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                data = f.read()
+            return data if data.strip() else f"[Archivo binario: {nombre}]"
+        except Exception:
+            return f"[Archivo binario: {nombre}]"
+
+
 @api_router.post("/expedientes/{expediente_id}/procesar")
 async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
     config = load_config()
@@ -753,11 +786,7 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
     for doc in documentos:
         file_path = exp_dir / doc["nombre"]
         if file_path.exists():
-            try:
-                with open(file_path, 'r', encoding='utf-8') as f:
-                    textos.append(f.read())
-            except Exception:
-                textos.append(f"[Archivo binario: {doc['nombre']}]")
+            textos.append(extraer_texto_documento(file_path, doc.get("tipo", ""), doc["nombre"]))
     texto_concatenado = "\n\n---\n\n".join(textos) if textos else "Sin documentos"
 
     db_execute("UPDATE expedientes SET estado = 'procesando', updated_at = ? WHERE id = ?",

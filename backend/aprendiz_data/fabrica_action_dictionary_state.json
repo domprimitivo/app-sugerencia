@@ -1,0 +1,11 @@
+{
+  "actions_by_phase": {
+    "Equilibrio": [
+      {
+        "action_id": "evento_personal_cumple",
+        "label": "evento_personal_cumple"
+      }
+    ]
+  },
+  "updated_at": "2026-09-09T15:51:57.851840+00:00"
+}

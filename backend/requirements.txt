@@ -29,3 +29,5 @@ torch
 nbclient
 nbformat
 ipykernel
+pdfplumber
+python-docx

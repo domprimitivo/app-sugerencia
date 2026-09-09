@@ -1,8 +1,8 @@
 {
   "modo": "local",
   "tipo_dominio": "empresa",
-  "dominio_id": "hotel",
-  "dominio_nombre": "Hotel",
+  "dominio_id": "fabrica",
+  "dominio_nombre": "Fabrica",
   "configurado": true,
-  "activado_en": "2026-09-09T15:37:04.108232+00:00"
+  "activado_en": "2026-09-09T15:51:34.813480+00:00"
 }

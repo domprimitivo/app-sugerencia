@@ -12,6 +12,6 @@ App 100% local (SQLite, sin auth de usuario). No hay login.
   sobre `json.dumps(campos, sort_keys=True, ensure_ascii=False)` (excluyendo `firma`).
 
 ## Dominio configurado actualmente
-- `hotel` (tipo empresa) — `POST /api/config/inicializar {"dominio_id":"hotel"}`.
+- `fabrica` (tipo empresa) — journey de verificación de fábrica.
 - Dominios empresa: clinica, hotel, restaurante, retail, fabrica, logistica.
 - Dominios unipersonales: abogado, arquitecto, contador, consultor_pyme, diseno_producto, operaciones.

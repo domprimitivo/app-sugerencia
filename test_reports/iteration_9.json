@@ -1,0 +1,22 @@
+{
+  "summary": "Verified PDF/DOCX ingestion fix and free-text tagging in /archivos. Backend: 6/6 pytest cases passed on public URL (fabrica domain, activator valid). PDF (reportlab) and DOCX (python-docx) contents are correctly extracted by server.extraer_texto_documento (no more '[Archivo binario:...]'), texto_concatenado feeds the RAG procesar_expediente and returns documentos_procesados=3 with estado='completado'. Free-text with 'Etiqueta: cumpleaños' prefix also processes correctly. Frontend: /archivos exposes escritura-libre-etiqueta-input above escritura-libre-input, click on procesar-embudo-btn triggers backend flow, asistente-sugerencia card appears with action label, and confirmar/corregir + guardar flow works (backend responds 'Corrección anotada.').",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {"ui_bugs": [], "integration_issues": [], "design_issues": []},
+  "test_report_links": [
+    "/app/backend/tests/test_ingesta_pdf_docx.py",
+    "/app/test_reports/pytest/ingesta_pdf_docx.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "server.py is very large (>2000 lines); consider splitting activation, aprendiz, bimestral, and ingesta routers into separate modules for maintainability.",
+    "extraer_texto_documento imports pdfplumber/docx lazily inside the function — fine for optional deps, but a single import at module top would surface missing deps earlier.",
+    "Out-of-scope but noted by main agent: lazo_generico.py trajectories still use fixed CVD Grafeno domain vocabulary instead of the active domain language."
+  ],
+  "updated_files": ["/app/backend/tests/test_ingesta_pdf_docx.py"],
+  "success_rate": {"backend": "100%", "frontend": "100%"},
+  "test_credentials": "N/A (no auth; fabrica domain preconfigured with valid activator).",
+  "seed_data_creation": "Test expedientes are prefixed TEST_ and deleted in fixture teardown.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Fix for PDF/DOCX ingestion is confirmed working end-to-end. Active domain remains 'fabrica'. Frontend etiqueta input is directly above the textarea in /archivos and its value is prepended as 'Etiqueta: {etiqueta}\\n\\n{texto}' before upload as escritura_libre.txt. Asistente sugerencia and corregir/confirmar flow using /api/aprendiz/{dominio}/decision-asistente endpoint works."
+}

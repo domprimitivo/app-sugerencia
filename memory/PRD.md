@@ -77,6 +77,16 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
   documento `navegacion.txt` y lo pasa por el embudo (procesar_expediente), para
   que quede registrado en el mismo lugar que el resto de la operación
   (expedientes/procesamientos + sugerencia del asistente). Validado 100%.
-- Pendiente Fase 2 **Habitabilidad**: construir el elemento de navegación para
-  dominios medicina/ciberseguridad (mismo esquema: semáforo + tres hermanos +
-  trayectorias + modos sugerencia/agencia).
+## Añadido (sesión 4 · 2026-06) — Ingesta real + etiqueta (buyer journey fábrica)
+- **BUG FIX — extracción PDF/DOCX:** el embudo abría todo como UTF-8, así que
+  PDF/DOCX caían a `[Archivo binario]` y se perdían. Nueva
+  `extraer_texto_documento()` en server.py: PDF (pdfplumber), DOCX (python-docx),
+  fallback texto plano. Deps: pdfplumber, python-docx. Validado 100%.
+- **Etiqueta en escritura libre:** input `escritura-libre-etiqueta-input` en
+  `/archivos`; se antepone `Etiqueta: {etiqueta}` al texto y se registra aunque
+  el cucurucho no lo reconozca como evento (nivel personal).
+- **Pendiente (fuera de alcance del fix, notado):**
+  - Trayectorias en lenguaje del dominio activo (hoy `lazo_generico.py` usa un
+    dominio fijo CVD Grafeno, no fábrica/medicina/ciberseguridad).
+  - Modelo explícito de los **tres niveles** de registro: técnico (habitabilidad),
+    dominio (cadena de valor / soporte) y personal.

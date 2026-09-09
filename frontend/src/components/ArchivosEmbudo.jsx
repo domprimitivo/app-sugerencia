@@ -44,6 +44,7 @@ export const ArchivosEmbudo = () => {
   const [reconstruidos, setReconstruidos] = useState(null);
   const [embudoOut, setEmbudoOut] = useState(null);
   const [freeText, setFreeText] = useState('');
+  const [etiqueta, setEtiqueta] = useState('');
   const [asistente, setAsistente] = useState(null);
   const [corrigiendo, setCorrigiendo] = useState(false);
   const [correccion, setCorreccion] = useState('');
@@ -125,7 +126,8 @@ export const ArchivosEmbudo = () => {
         await axios.post(`${API}/expedientes/${expId}/documentos`, fd);
       }
       if (freeText.trim()) {
-        const blob = new Blob([freeText], { type: 'text/plain' });
+        const cuerpo = etiqueta.trim() ? `Etiqueta: ${etiqueta.trim()}\n\n${freeText}` : freeText;
+        const blob = new Blob([cuerpo], { type: 'text/plain' });
         const fd = new FormData();
         fd.append('file', new File([blob], 'escritura_libre.txt', { type: 'text/plain' }));
         await axios.post(`${API}/expedientes/${expId}/documentos`, fd);
@@ -203,6 +205,15 @@ export const ArchivosEmbudo = () => {
             <label className="block font-mono text-xs uppercase tracking-wider mb-2" style={{ color: C.brick }} htmlFor="escritura-libre">
               Escritura libre
             </label>
+            <input
+              type="text"
+              value={etiqueta}
+              onChange={(e) => setEtiqueta(e.target.value)}
+              placeholder="Etiqueta (opcional): p. ej. cumpleaños"
+              className="w-full rounded-full px-4 py-2 text-sm mb-2"
+              style={{ background: '#FFFFFF', border: `1px solid ${C.border}`, color: C.ink }}
+              data-testid="escritura-libre-etiqueta-input"
+            />
             <textarea
               id="escritura-libre"
               value={freeText}
