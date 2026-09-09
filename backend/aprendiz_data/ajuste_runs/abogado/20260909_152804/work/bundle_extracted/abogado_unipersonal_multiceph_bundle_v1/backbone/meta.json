@@ -1,0 +1,18 @@
+{
+  "k": 10,
+  "feature_cols": [
+    "TensionElastica_TE",
+    "Persistencia_P",
+    "RuidoInstitucional_R",
+    "MomentoInercia_MI"
+  ],
+  "labels": {
+    "0": "Estabilidad (baja energía)",
+    "1": "Tensión acumulada (peligro de latigazo)",
+    "2": "Ruptura en curso (brinco ocurriendo)",
+    "3": "Fase invariante (nueva norma / cresta sostenida)"
+  },
+  "rnn_type": "gru",
+  "use_attention": true,
+  "seed": 42
+}

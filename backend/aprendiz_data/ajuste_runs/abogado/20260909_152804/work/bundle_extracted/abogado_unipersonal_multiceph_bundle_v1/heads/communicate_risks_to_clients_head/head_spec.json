@@ -1,0 +1,15 @@
+{
+  "name": "communicate_risks_to_clients_head",
+  "type": "TrigoBandHead",
+  "target_asset": "ABOGADO_DEFAULT_ASSET",
+  "input_spec": {
+    "price_col": "price",
+    "window": 0
+  },
+  "params": {},
+  "phase_conditioning": {
+    "active_in_phases": [
+      "Tensión acumulada (peligro de latigazo)"
+    ]
+  }
+}

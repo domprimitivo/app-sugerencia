@@ -1,0 +1,213 @@
+{
+  "bundle_name": "abogado_unipersonal_multiceph_bundle_v1",
+  "created_at": "2026-02-09T19:46:41",
+  "backbone": {
+    "files": {
+      "meta.json": "87d7600fc9247f5d17e734c4cf40ebb52545e3976484372567cb1fe121015cb7",
+      "mu.npy": "308c3c98699ecc5c3f3f8e79734fa42ebe5a52bec2cab34b325400df6cc12b00",
+      "sigma.npy": "95475bd6f51800c1aeb65a785d7916be0528446962db92a0f158a5f56172c7c3",
+      "phase_rnn_state_dict.pt": "c7733cc347798cdfdf416f487da7bac942cba5283976eae4a59f98e240769f8a"
+    },
+    "meta": {
+      "k": 10,
+      "feature_cols": [
+        "TensionElastica_TE",
+        "Persistencia_P",
+        "RuidoInstitucional_R",
+        "MomentoInercia_MI"
+      ],
+      "labels": {
+        "0": "Estabilidad (baja energía)",
+        "1": "Tensión acumulada (peligro de latigazo)",
+        "2": "Ruptura en curso (brinco ocurriendo)",
+        "3": "Fase invariante (nueva norma / cresta sostenida)"
+      },
+      "rnn_type": "gru",
+      "use_attention": true,
+      "seed": 42
+    }
+  },
+  "heads": [
+    {
+      "name": "review_case_agenda_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/review_case_agenda_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "confirm_client_meetings_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/confirm_client_meetings_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "update_jurisprudence_db_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/update_jurisprudence_db_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "manage_billing_collections_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/manage_billing_collections_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "plan_continuing_education_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/plan_continuing_education_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "prioritize_imminent_cases_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/prioritize_imminent_cases_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "redefine_legal_strategy_complex_case_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/redefine_legal_strategy_complex_case_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "seek_additional_legal_resources_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/seek_additional_legal_resources_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "communicate_risks_to_clients_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/communicate_risks_to_clients_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "negotiate_out_of_court_settlements_head",
+      "type": "TrigoBandHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/negotiate_out_of_court_settlements_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "restructure_client_portfolio_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/restructure_client_portfolio_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "invest_new_legal_tech_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/invest_new_legal_tech_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "hire_fire_staff_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/hire_fire_staff_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "redefine_legal_marketing_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/redefine_legal_marketing_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "consider_merger_acquisition_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/consider_merger_acquisition_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "declare_conflict_of_interest_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/declare_conflict_of_interest_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "temporary_new_case_closure_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/temporary_new_case_closure_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "activate_reputation_crisis_protocol_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/activate_reputation_crisis_protocol_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "partial_total_firm_dissolution_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/partial_total_firm_dissolution_head",
+      "files": [
+        "head_spec.json"
+      ]
+    },
+    {
+      "name": "regulatory_intervention_sanction_head",
+      "type": "CobreRangeCeilingHead",
+      "target_asset": "ABOGADO_DEFAULT_ASSET",
+      "path": "heads/regulatory_intervention_sanction_head",
+      "files": [
+        "head_spec.json"
+      ]
+    }
+  ],
+  "config_sha256": "b15e997d797771b369023aac617590e3d7dcccb7f8282d8f4ffc2a60f973715f"
+}

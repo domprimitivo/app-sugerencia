@@ -1,0 +1,42 @@
+{
+  "run_id": "20260909_152805",
+  "bundle_zip": "abogado_unipersonal_multiceph_bundle_v1.zip",
+  "bundle_sha256": "86fc78114cdf712cb26fd2e122527b4d188e342d487384468482cc4ac9803ff0",
+  "domain_dir": "abogado_unipersonal_multiceph_bundle_v1",
+  "target_domain": "abogado",
+  "time_window": {
+    "start": "2000-01-01",
+    "end": "2100-01-01"
+  },
+  "counts": {
+    "events_in_window": 5,
+    "samples_supervised": 5,
+    "samples_after_allowlist": 5,
+    "new_actions_observed": 1,
+    "actions_added_to_catalog": 0,
+    "allow_vocab_size": 2
+  },
+  "allowlist_policy": {
+    "mode": "conservative",
+    "min_new_action_freq": 2
+  },
+  "training": {
+    "epochs": 8,
+    "batch_size": 64,
+    "lr": 0.0002,
+    "weight_decay": 0.0001,
+    "best_epoch": 1,
+    "best_val_loss": 1.5749462842941284
+  },
+  "feature_spec": {
+    "phase_prob_keys": [
+      "Estabilidad",
+      "Invariante",
+      "Ruptura",
+      "Tensión"
+    ],
+    "soft_vocab_size": 2,
+    "in_dim": 11,
+    "out_dim": 2
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "name": "hire_fire_staff_head",
+  "type": "CobreRangeCeilingHead",
+  "target_asset": "ABOGADO_DEFAULT_ASSET",
+  "input_spec": {
+    "price_col": "price",
+    "window": 0
+  },
+  "params": {},
+  "phase_conditioning": {
+    "active_in_phases": [
+      "Ruptura en curso (brinco ocurriendo)"
+    ]
+  }
+}

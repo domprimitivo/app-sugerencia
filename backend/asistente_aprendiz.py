@@ -43,6 +43,7 @@ from typing import Dict, Any, List, Optional
 
 
 FASES_EMPRESA = ["Estabilidad", "Equilibrio", "Tensión Operativa", "Resolución en Curso"]
+FASES_UNIPERSONAL = ["Estabilidad", "Tensión", "Ruptura", "Invariante"]
 
 
 def slugify(texto: Optional[str]) -> str:
@@ -61,11 +62,12 @@ def slugify(texto: Optional[str]) -> str:
     return t or "sin_accion"
 
 
-def _phase_probs(fase_nombre: str, confianza: float) -> Dict[str, float]:
+def _phase_probs(fase_nombre: str, confianza: float, fases: List[str] = None) -> Dict[str, float]:
     """Reparte la masa de probabilidad con un pico en la fase detectada."""
+    fases = fases or FASES_EMPRESA
     pico = max(0.4, min(0.95, confianza))
-    resto = (1.0 - pico) / max(1, len(FASES_EMPRESA) - 1)
-    probs = {f: round(resto, 4) for f in FASES_EMPRESA}
+    resto = (1.0 - pico) / max(1, len(fases) - 1)
+    probs = {f: round(resto, 4) for f in fases}
     if fase_nombre not in probs:
         probs[fase_nombre] = 0.0
     probs[fase_nombre] = round(pico, 4)
@@ -114,6 +116,34 @@ def construir_sugerencia(dominio: str, node_id: str, rag_resultado: Dict[str, An
 
     accion_label = rag_resultado.get("accion_sugerida") or "revisar operacion"
     probs = _phase_probs(fase_nombre, confianza)
+
+    return {
+        "node_id": node_id,
+        "dominio": dominio,
+        "suggested_action_id": slugify(accion_label),
+        "suggested_action_label": accion_label,
+        "phase": fase_nombre,
+        "phase_probs": probs,
+        "clarity": _clarity(probs),
+        "R_score": round(float(estados.get("indice_telos", 0.5)), 4),
+        "soft_tags": _soft_tags(estados),
+        "confianza": confianza,
+    }
+
+
+def construir_sugerencia_unipersonal(dominio: str, node_id: str,
+                                     resultado: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Construye la sugerencia (mismo formato que empresas) a partir del resultado
+    del episodio del aprendiz unipersonal. Permite alimentar el mismo registro
+    de decisiones y el ajuste automático, sin cambiar la UX unipersonal.
+    """
+    estados = resultado.get("estados", {}) or {}
+    fase = resultado.get("fase_backbone", {}) or {}
+    fase_nombre = fase.get("label", "Estabilidad")
+    confianza = round(float(resultado.get("confianza", 0.6)), 3)
+    accion_label = resultado.get("accion_sugerida") or "revisar caso"
+    probs = _phase_probs(fase_nombre, confianza, FASES_UNIPERSONAL)
 
     return {
         "node_id": node_id,

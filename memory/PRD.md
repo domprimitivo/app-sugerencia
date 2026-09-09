@@ -43,8 +43,23 @@ dependencia de internet ni terceros). Objetivo del cliente: distribuible como
 - Testing agent: backend 100% (9/9), frontend 100%. Sin issues críticos.
 
 ## Backlog / Próximos
-- P1: Inferencia usando el `policy_adapter.pt` promovido para refinar la
-  sugerencia del asistente (hoy la sugerencia base viene del RAG).
+- **EN CURSO / PRÓXIMO: Fase 2 "Habitabilidad"** (elemento de observación en
+  `/archivos`: semáforo + trayectoria). Es el siguiente elemento a construir.
 - P2: Vista de historial de decisiones / estado del ajuste dentro de `/archivos`.
 - P2: Refactor de ArchivosEmbudo.jsx en subcomponentes (~540 líneas).
 - P2: Alinear naming de respuestas del feature aprendiz.
+
+## Añadido (sesión 2 · 2026-06)
+- **Sugerencia entrenada (empresas):** nuevo `aprendiz_inferencia.py` carga el
+  `{dominio}_policy_adapter.pt` promovido y refina la sugerencia del asistente
+  (replica la vectorización de la celda 9 del notebook). En la rama empresa de
+  `procesar_expediente`, si hay modelo → `asistente.origen="modelo"`, si no
+  `="rag"` (fallback). Cache por mtime; si el vector no cuadra, cae al RAG.
+- **Ajuste unipersonal:** `registrar_decision` (`/sincronizaciones/{id}/decision`)
+  ahora, para dominios unipersonales y decisión ≠ abstener, deriva el evento del
+  último `procesamientos` y lo registra en `aprendiz_decisiones` + learning_log
+  (schema notebook), sin cambiar la UX. El scheduler de 50 días y
+  `/aprendiz/{dominio}/ajuste/ejecutar` ya funcionan para unipersonal (usa el
+  bundle real del repo). Validado con `abogado`: 5 decisiones → ajuste ejecutó el
+  notebook y reemplazó el modelo.
+- Nota: `DecisionCreate` exige `expediente_id` también en el body.

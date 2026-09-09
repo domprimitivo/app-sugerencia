@@ -1,0 +1,334 @@
+{
+  "bundle_name": "abogado_unipersonal_multiceph_bundle_v1",
+  "timestamp": "2026-02-09T19:46:41",
+  "device": "cpu",
+  "config": {
+    "bundle_name": "abogado_unipersonal_multiceph_bundle_v1",
+    "feature_cols": [
+      "client_churn_rate",
+      "case_load_pending",
+      "billable_hours_utilization",
+      "litigation_success_rate",
+      "regulatory_compliance_issues",
+      "average_case_duration_days",
+      "accounts_receivable_days_legal",
+      "legal_research_hours",
+      "client_referral_rate",
+      "staff_legal_turnover_rate"
+    ],
+    "phase_gating": {
+      "mode": "hard",
+      "threshold": 0.65
+    },
+    "heads": [
+      {
+        "name": "review_case_agenda_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Estabilidad (baja energía)"
+          ]
+        }
+      },
+      {
+        "name": "confirm_client_meetings_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Estabilidad (baja energía)"
+          ]
+        }
+      },
+      {
+        "name": "update_jurisprudence_db_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Estabilidad (baja energía)"
+          ]
+        }
+      },
+      {
+        "name": "manage_billing_collections_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Estabilidad (baja energía)"
+          ]
+        }
+      },
+      {
+        "name": "plan_continuing_education_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Estabilidad (baja energía)"
+          ]
+        }
+      },
+      {
+        "name": "prioritize_imminent_cases_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Tensión acumulada (peligro de latigazo)"
+          ]
+        }
+      },
+      {
+        "name": "redefine_legal_strategy_complex_case_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Tensión acumulada (peligro de latigazo)"
+          ]
+        }
+      },
+      {
+        "name": "seek_additional_legal_resources_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Tensión acumulada (peligro de latigazo)"
+          ]
+        }
+      },
+      {
+        "name": "communicate_risks_to_clients_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Tensión acumulada (peligro de latigazo)"
+          ]
+        }
+      },
+      {
+        "name": "negotiate_out_of_court_settlements_head",
+        "type": "TrigoBandHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Tensión acumulada (peligro de latigazo)"
+          ]
+        }
+      },
+      {
+        "name": "restructure_client_portfolio_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Ruptura en curso (brinco ocurriendo)"
+          ]
+        }
+      },
+      {
+        "name": "invest_new_legal_tech_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Ruptura en curso (brinco ocurriendo)"
+          ]
+        }
+      },
+      {
+        "name": "hire_fire_staff_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Ruptura en curso (brinco ocurriendo)"
+          ]
+        }
+      },
+      {
+        "name": "redefine_legal_marketing_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Ruptura en curso (brinco ocurriendo)"
+          ]
+        }
+      },
+      {
+        "name": "consider_merger_acquisition_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Ruptura en curso (brinco ocurriendo)"
+          ]
+        }
+      },
+      {
+        "name": "declare_conflict_of_interest_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Fase invariante (nueva norma / cresta sostenida)"
+          ]
+        }
+      },
+      {
+        "name": "temporary_new_case_closure_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Fase invariante (nueva norma / cresta sostenida)"
+          ]
+        }
+      },
+      {
+        "name": "activate_reputation_crisis_protocol_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Fase invariante (nueva norma / cresta sostenida)"
+          ]
+        }
+      },
+      {
+        "name": "partial_total_firm_dissolution_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Fase invariante (nueva norma / cresta sostenida)"
+          ]
+        }
+      },
+      {
+        "name": "regulatory_intervention_sanction_head",
+        "type": "CobreRangeCeilingHead",
+        "target_asset": "ABOGADO_DEFAULT_ASSET",
+        "input_spec": {
+          "price_col": "price",
+          "window": 0
+        },
+        "params": {},
+        "phase_conditioning": {
+          "active_in_phases": [
+            "Fase invariante (nueva norma / cresta sostenida)"
+          ]
+        }
+      }
+    ]
+  },
+  "inputs": {
+    "backbone_dir": "/content",
+    "data_dir": "/content/data_assets",
+    "backbone_input_file": "/content/data_assets/INPUT_RNN_READY.csv"
+  },
+  "outputs": {
+    "bundle_dir": "/content/multiceph_bundle_out/abogado_unipersonal_multiceph_bundle_v1"
+  }
+}

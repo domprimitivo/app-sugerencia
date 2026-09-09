@@ -1,0 +1,15 @@
+{
+  "actions_by_phase": {
+    "Estabilidad": [
+      {
+        "action_id": "instalar_bundle",
+        "label": "instalar_bundle"
+      },
+      {
+        "action_id": "negociar_acuerdo_extrajudicial",
+        "label": "negociar acuerdo extrajudicial"
+      }
+    ]
+  },
+  "updated_at": "2026-09-09T15:28:03.995057+00:00"
+}

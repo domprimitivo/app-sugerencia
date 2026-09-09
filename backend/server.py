@@ -23,9 +23,10 @@ from datetime import datetime, timezone
 import shutil
 from local_storage import guardar_stream
 from asistente_aprendiz import (
-    construir_sugerencia, construir_evento, escribir_learning_log,
-    actualizar_action_dictionary, slugify,
+    construir_sugerencia, construir_sugerencia_unipersonal, construir_evento,
+    escribir_learning_log, actualizar_action_dictionary, slugify,
 )
+from aprendiz_inferencia import sugerir_entrenada
 import ajuste_bimestral
 
 def _resolver_root_dir() -> Path:
@@ -796,6 +797,14 @@ async def procesar_expediente(expediente_id: str, input: ProcesamientoRequest):
         # para lo ingestado. No es explícito; sólo sugiere y espera confirmación.
         asistente = construir_sugerencia(config["dominio_id"], expediente_id, resultado)
 
+        # Sugerencia entrenada: si ya hay un modelo ajustado, refina la sugerencia.
+        entrenada = sugerir_entrenada(config["dominio_id"], asistente, APRENDIZ_DIR)
+        if entrenada:
+            asistente["suggested_action_id"], asistente["suggested_action_label"] = entrenada
+            asistente["origen"] = "modelo"
+        else:
+            asistente["origen"] = "rag"
+
         resultado["asistente"] = asistente
         return ProcesamientoEmpresaResponse(**resultado)
 
@@ -810,6 +819,44 @@ async def registrar_decision(expediente_id: str, input: DecisionCreate):
         (decision.id, decision.expediente_id, decision.sugerencia_tcl, decision.decision, decision.correccion,
          decision.created_at.isoformat())
     )
+
+    # Alimentar el aprendizaje unipersonal (mismo registro + ajuste automático 50 días),
+    # sin alterar la UX: derivamos el evento del último procesamiento del expediente.
+    if input.decision != "abstener":
+        try:
+            config = load_config()
+            if config.get("tipo_dominio") == "unipersonal":
+                proc = row_to_dict(db_query_one(
+                    "SELECT resultado_json FROM procesamientos WHERE expediente_id = ? ORDER BY created_at DESC LIMIT 1",
+                    (expediente_id,)))
+                if proc and proc.get("resultado_json"):
+                    resultado = json.loads(proc["resultado_json"])
+                    dominio = config["dominio_id"]
+                    sug = construir_sugerencia_unipersonal(dominio, expediente_id, resultado)
+                    user_accepted = input.decision == "confirmar"
+                    final_label = (input.correccion or "").strip() if not user_accepted else sug["suggested_action_label"]
+                    if final_label:
+                        evento = construir_evento(sug, user_accepted, final_label)
+                        escribir_learning_log(APRENDIZ_DIR, dominio, evento)
+                        ae = evento["action_execution"]
+                        actualizar_action_dictionary(APRENDIZ_DIR, dominio,
+                                                     evento["backbone_inference"]["phase"],
+                                                     ae["action_id"], ae["action_label"])
+                        db_execute(
+                            """INSERT INTO aprendiz_decisiones
+                               (id, dominio, node_id, timestamp, fuente, suggested_action_id, suggested_action_label,
+                                final_action_id, final_action_label, user_accepted, correccion_texto,
+                                phase, r_score, confianza, payload_json)
+                               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                            (str(uuid.uuid4()), dominio, expediente_id, evento["timestamp"], "unipersonal",
+                             sug["suggested_action_id"], sug["suggested_action_label"],
+                             ae["action_id"], ae["action_label"], 1 if user_accepted else 0,
+                             input.correccion, evento["backbone_inference"]["phase"],
+                             sug.get("R_score"), sug.get("confianza"),
+                             json.dumps(evento, ensure_ascii=False)))
+        except Exception as e:
+            logger.warning(f"[aprendiz] no se pudo registrar aprendizaje unipersonal: {e}")
+
     return decision
 
 @api_router.get("/decisiones", response_model=List[Decision])

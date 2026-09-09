@@ -1,0 +1,12 @@
+{
+  "Estabilidad": [
+    {
+      "action_id": "instalar_bundle",
+      "label": "instalar_bundle"
+    },
+    {
+      "action_id": "negociar_acuerdo_extrajudicial",
+      "label": "negociar acuerdo extrajudicial"
+    }
+  ]
+}

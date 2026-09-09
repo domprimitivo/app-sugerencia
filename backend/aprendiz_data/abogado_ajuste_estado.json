@@ -1,0 +1,25 @@
+{
+  "dominio": "abogado",
+  "run_id": "20260909_152804",
+  "iniciado_at": "2026-09-09T15:28:04.032783+00:00",
+  "estado": "completado",
+  "modelo_reemplazado": true,
+  "artefactos_promovidos": [
+    "policy_adapter.pt",
+    "allowed_actions_by_phase.json",
+    "actions_added_this_bimester.json",
+    "soft_vocab.json",
+    "action_vocab.json",
+    "bimester_report.json"
+  ],
+  "report": {
+    "events_in_window": 5,
+    "samples_supervised": 5,
+    "samples_after_allowlist": 5,
+    "new_actions_observed": 1,
+    "actions_added_to_catalog": 0,
+    "allow_vocab_size": 2
+  },
+  "ultimo_run": "2026-09-09T15:28:07.617943+00:00",
+  "finalizado_at": "2026-09-09T15:28:07.617946+00:00"
+}
